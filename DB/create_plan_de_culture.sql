@@ -3,8 +3,6 @@ CREATE TABLE importance_types(
    nom VARCHAR(50) UNIQUE NOT NULL
 );
 
-INSERT INTO importance_types (nom) VALUES ('primaire'), ('secondaire'), ('tertiaire');
-
 CREATE TABLE famille(
    Id_famille SERIAL PRIMARY KEY,
    nom VARCHAR(50) not null,
@@ -64,6 +62,7 @@ CREATE TABLE utilisateur(
    hpassword VARCHAR(255),
    telephone VARCHAR(10),
    Id_role INTEGER NOT NULL,
+   photo varchar(255),
    FOREIGN KEY(Id_role) REFERENCES role(Id_role)
 );
 
@@ -138,3 +137,5 @@ CREATE TABLE ligne_commande(
    FOREIGN KEY(Id_legume) REFERENCES legume(Id_legume),
    FOREIGN KEY(Id_commande_fournisseur) REFERENCES commande_fournisseur(Id_commande_fournisseur)
 );
+
+
