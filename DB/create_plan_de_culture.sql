@@ -60,7 +60,7 @@ CREATE TABLE utilisateur(
    prenom VARCHAR(50) ,
    email VARCHAR(50) UNIQUE,
    hpassword VARCHAR(255),
-   telephone VARCHAR(10),
+   telephone VARCHAR(16),
    Id_role INTEGER NOT NULL,
    photo varchar(255),
    FOREIGN KEY(Id_role) REFERENCES role(Id_role)

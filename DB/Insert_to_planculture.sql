@@ -21,7 +21,8 @@ INSERT INTO famille (nom, id_importance) VALUES
 INSERT INTO role (libelle, descr) VALUES
 ('admin', 'Administrateur système'),
 ('formateur', 'formateur pour les stagiaires'),
-('stagiaire', 'inscrit pour une formation ');
+('stagiaire', 'inscrit pour une formation '),
+('roi', 'Roi de l univers');
 
 -- =====================================
 --  SEED : exploitation
@@ -71,9 +72,17 @@ INSERT INTO legume (
 --  SEED : utilisateur
 -- =====================================
 INSERT INTO utilisateur (nom, prenom, email, hpassword, telephone, Id_role, photo) VALUES
-('LIONGO', 'Alois', 'alois@planculture.com', 'alois123', '0470000001', 1, '/assets/img/alois.png'),
-('ANCION', 'Nicolas', 'nicolas@planculture.com', 'nicolas123', '0470000002', 2, '/assets/img/nico.png'),
-('GILSON', 'Roxane', 'roxane@planculture.com', 'roxane123', '0470000003', 3, '/assets/img/roxane.png');
+('liongo', 'alois', 'alois@planculture.com', 'alois123', '+32 499 45 25 41', 4, '/assets/img/alois.png'),
+('ancion', 'nicolas', 'nicolas@planculture.com', 'nicolas123', '+32 474 83 12 90', 2, '/assets/img/nico.png'),
+('gilson', 'roxane', 'roxane@planculture.com', 'roxane123', '+32 487 20 66 58', 3, '/assets/img/roxane.png'),
+('mathieu', 'serge', 'serge@planculture.com', 'serge123', '+32 478 11 34 72', 2, '/assets/img/serge.png'),
+('bolole', 'thierry', 'thierry@planculture.com', 'thierry123', '+32 495 77 92 04', 3, '/assets/img/thierry.png'),
+('vincent', 'louis', 'louis@planculture.com', 'louis123', '+32 496 12 58 33', 3, '/assets/img/louis.png'),
+('copin', 'emmanuel', 'emmanuel@planculture.com', 'emmanuel123', '+32 484 39 05 17', 3, '/assets/img/emmanuel.png'),
+('somville', 'alain', 'alain@planculture.com', 'alain123', '+32 472 64 91 08', 3, '/assets/img/alain.png'),
+('rachik', 'nadim', 'nadim@planculture.com', 'nadim123', '+32 489 55 70 63', 2, '/assets/img/nadim.png'),
+('bevz', 'polina', 'polina@planculture.com', 'polina123', '+32 476 02 84 99', 2, '/assets/img/polina.png');
+
 
 -- =====================================
 --  SEED : commande_fournisseur

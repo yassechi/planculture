@@ -1,0 +1,29 @@
+services:
+  db:
+    image: postgres:15
+    container_name: culturo
+    restart: always
+    environment:
+      POSTGRES_USER: culturo
+      POSTGRES_PASSWORD: culturo
+      POSTGRES_DB: culturo
+    ports:
+      - '5432:5432'
+    volumes:
+      - culturo_data:/var/lib/postgresql/data
+
+  api:
+    build: .
+    container_name: nest_api
+    restart: always
+    ports:
+      - '3000:3000'
+    environment:
+      DB_TYPE: postgres
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USERNAME: culturo
+      DB_PASSWORD: culturo
+      DB_DATABASE: culturo
+volumes:
+  culturo_data:
