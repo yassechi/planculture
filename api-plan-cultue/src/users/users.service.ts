@@ -58,7 +58,7 @@ export class UsersService {
    * @param registerDto data for creating user
    * @returns JWT (acces token)
    */
-  public async register(registerDto: RegisterDTO): Promise<AccessTokenType> {
+  public async register(registerDto: RegisterDTO) {
     const { email, hpassword, id_role } = registerDto;
     const userFromDb = await this.userRepository.findOne({
       where: { email },
@@ -83,7 +83,7 @@ export class UsersService {
     };
 
     const accessToken = await this.jwtService.signAsync(payload);
-    return { accessToken };
+    return { id: savedUser.id_utilisateur ,accessToken };
   }
 
   /**
@@ -91,7 +91,7 @@ export class UsersService {
    * @param loginDTo data for log in to user account
    * @returns JWT (acces token)
    */
-  public async login(loginDTo: LoginDTO): Promise<AccessTokenType> {
+  public async login(loginDTo: LoginDTO) {
     const { email, hpassword } = loginDTo;
     const userFromDb = await this.userRepository.findOne({ where: { email } });
     if (!userFromDb) throw new BadRequestException('unregistered user');
@@ -104,7 +104,7 @@ export class UsersService {
       id_role: userFromDb.id_role,
     };
     const accessToken = await this.jwtService.signAsync(payload);
-    return { accessToken };
+    return { id: userFromDb.id_utilisateur , accessToken };
   }
 
   /**
