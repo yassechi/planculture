@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Role } from 'src/entities/role.entity';
-import { Utilisateur } from 'src/entities/utilisateur.entity';
 import { Repository } from 'typeorm';
 import { RegisterDTO } from './dtos/register.user.dto';
 import bcrypt from 'node_modules/bcryptjs';
@@ -14,12 +13,13 @@ import { JwtService } from '@nestjs/jwt';
 import { AccessTokenType, JWTPayloadType } from 'src/utils/types';
 import { ConfigService } from '@nestjs/config';
 import { UpdateUserDTO } from './dtos/update.user.dto';
+import { User_ } from 'src/entities/user_.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(Utilisateur)
-    private readonly userRepository: Repository<Utilisateur>,
+    @InjectRepository(User_)
+    private readonly userRepository: Repository<User_>,
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>,
     private readonly jwtService: JwtService,
@@ -29,7 +29,7 @@ export class UsersService {
    *
    * @returns
    */
-  async getAllUsers(): Promise<Utilisateur[]> {
+  async getAllUsers(): Promise<User_[]> {
     return await this.userRepository.find();
   }
 
@@ -38,8 +38,8 @@ export class UsersService {
    * @param id
    * @returns
    */
-  async getUserById(id: number): Promise<Utilisateur | null> {
-    return this.userRepository.findOneBy({ id_utilisateur: id });
+  async getUserById(id: number): Promise<User_ | null> {
+    return this.userRepository.findOneBy({ id_user: id });
   }
 
   /**
@@ -47,16 +47,14 @@ export class UsersService {
    * @param id
    * @returns
    */
-  async delUser(id: number): Promise<{ msg: string }> {
-    const user = await this.userRepository.findOne({
-      where: { id_utilisateur: id },
-    });
-
+  async setUserActiveStatus(id: number, active: boolean): Promise<User_> {
+    const user = await this.userRepository.findOne({ where: { id_user: id } });
     if (!user) {
-      throw new NotFoundException('Utilisateur introuvable');
+      throw new NotFoundException(`Utilisateur avec id ${id} non trouvé`);
     }
-    await this.userRepository.delete({ id_utilisateur: id });
-    return { msg: 'Utilisateur supprimé avec succès' };
+
+    user.user_active = active;
+    return await this.userRepository.save(user);
   }
 
   /**
@@ -68,7 +66,7 @@ export class UsersService {
     updateData: UpdateUserDTO,
   ): Promise<{ status: number; msg: string }> {
     const user = await this.userRepository.findOne({
-      where: { id_utilisateur: updateData.id_utilisateur },
+      where: { id_user: updateData.id_utilisateur },
       relations: ['role'],
     });
     if (!user) {
@@ -83,7 +81,7 @@ export class UsersService {
       if (!role) {
         throw new BadRequestException('Role introuvable');
       }
-      user.role = role;
+      user.role = role; //////////////////////////////////////
     }
     // Mise à jour du mot de passe si changement
     if (updateData.hpassword) {
@@ -119,13 +117,13 @@ export class UsersService {
     const savedUser = await this.userRepository.save(newUser);
 
     const payload: JWTPayloadType = {
-      id: savedUser.id_utilisateur,
+      id: savedUser.id_user,
       email: savedUser.email,
       id_role: savedUser.role.id_role,
     };
 
     const accessToken = await this.jwtService.signAsync(payload);
-    return { id: savedUser.id_utilisateur, accessToken };
+    return { id: savedUser.id_user, accessToken };
   }
 
   /**
@@ -141,12 +139,12 @@ export class UsersService {
     if (!isPassMatch) throw new BadRequestException('invalid password');
 
     const payload: JWTPayloadType = {
-      id: userFromDb.id_utilisateur,
+      id: userFromDb.id_user,
       email: userFromDb.email,
       id_role: userFromDb.id_role,
     };
     const accessToken = await this.jwtService.signAsync(payload);
-    return { id: userFromDb.id_utilisateur, accessToken };
+    return { id: userFromDb.id_user, accessToken };
   }
 
   /**
@@ -156,7 +154,7 @@ export class UsersService {
    */
   public async getCurrentUser(id: number) {
     const userFromDb = await this.userRepository.findOne({
-      where: { id_utilisateur: id },
+      where: { id_user: id },
     });
     if (!userFromDb) throw new NotFoundException('User Not Found !');
     return userFromDb;

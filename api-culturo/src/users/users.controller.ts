@@ -6,12 +6,13 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseIntPipe,
+  Patch,
   Post,
   Put,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { Utilisateur } from 'src/entities/utilisateur.entity';
 import { RegisterDTO } from './dtos/register.user.dto';
 import { LoginDTO } from './dtos/login.dto';
 import { AuthChard } from './guards/auth.guard';
@@ -50,10 +51,13 @@ export class UsersController {
     return await this.userService.updateUser(updateUserDto);
   }
 
-  @Delete('/:id')
-  @ApiOperation({ summary: 'Delete User' })
-  async removeUser(@Param('id') id: number) {
-    return this.userService.delUser(id);
+  @Patch(':id/status')
+  @ApiOperation({ summary: 'Disactivate User' })
+  async setUserStatus(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('active') active: boolean,
+  ) {
+    return this.userService.setUserActiveStatus(id, active);
   }
 
   @Post('register')

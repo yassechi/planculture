@@ -1,16 +1,14 @@
-import { Amendement } from './amendement.entity';
-import { Recolte } from './recolte.entity';
-import { Legume } from './legume.entity';
+import { SectionPlan } from './section_plan.entity';
 import {
   Column,
   Entity,
   ManyToOne,
   OneToMany,
-  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { PlanSection } from './planSection.entity';
-import { Arrosage } from './arrosage.entity';
+import { Watering } from './watering.entity';
+import { Harvest } from './harvest.entity';
+import { Vegetable } from './vegetable.entity';
 
 @Entity()
 export class Section {
@@ -26,18 +24,15 @@ export class Section {
   @Column({ type: 'timestamp' })
   num_semaine_fin: Date;
 
-  @OneToMany(() => Legume, (legume) => legume.sections)
-  legume: Legume;
+  @OneToMany(() => Harvest, (harvest) => harvest.section)
+  harvets: Harvest[];
 
-  @OneToOne(() => Recolte, (recolte) => recolte.section)
-  recolte: Recolte;
+  @ManyToOne(() => Vegetable, (vegetable) => vegetable.sections)
+  vegetable: Vegetable;
 
-  @ManyToOne(() => PlanSection, (planSection) => planSection.sections)
-  paln_section: PlanSection;
+  @OneToMany(() => Watering, (watering) => watering.section)
+  waterings: Watering[];
 
-  @OneToMany(() => Arrosage, (arrosages) => arrosages.section)
-  arrosages: Arrosage[];
-
-  @OneToMany(() => Amendement, (amendements) => amendements.section)
-  amendements: Amendement[];
+  @ManyToOne(() => Section, (section) => section.sectionPlan)
+  sectionPlan : SectionPlan;
 }

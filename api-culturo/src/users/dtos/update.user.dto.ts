@@ -50,5 +50,5 @@ export class UpdateUserDTO {
   @IsOptional()
   @IsBoolean()
   @ApiProperty({ description: '' })
-  is_active?: boolean;
+  user_active?: boolean;
 }

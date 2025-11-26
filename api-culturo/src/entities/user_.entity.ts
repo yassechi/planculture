@@ -1,26 +1,28 @@
+import { Exploitation } from './exploitation.entity';
 import { CURRENT_TIMESTAMP } from 'src/utils/constants';
 import {
   Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
-  ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Role } from './role.entity';
-import { Recolte } from './recolte.entity';
+import { Harvest } from './harvest.entity';
+import { Order } from './order.entity';
 
-@Entity({ name: 'utilisateur' })
-export class Utilisateur {
+@Entity()
+export class User_ {
   @PrimaryGeneratedColumn()
-  id_utilisateur: number;
+  id_user: number;
 
   @Column({ type: 'varchar', length: '100' })
-  nom: string;
+  user_first_name: string;
 
   @Column({ type: 'varchar', length: '100' })
-  prenom: string;
+  user_last_name: string;
 
   @Column({ type: 'varchar', length: '150', unique: true })
   email: string;
@@ -29,23 +31,13 @@ export class Utilisateur {
   hpassword: string;
 
   @Column({ type: 'varchar' })
-  telephone: string;
+  phone: string;
 
   @Column({ type: 'varchar', nullable: true })
-  photo: string;
+  path_photo: string;
 
   @Column({ type: 'boolean', default: true })
-  is_active: boolean;
-
-  @Column({ name: 'id_role', nullable: false })
-  id_role: number;
-
-  @ManyToOne(() => Role, (role) => role.utilisateurs)
-  @JoinColumn({ name: 'id_role' })
-  role: Role;
-
-  @ManyToMany(() => Recolte, (recoltes) => recoltes.utilisateurs)
-  recoltes: Recolte[];
+  user_active: boolean;
 
   @CreateDateColumn({ type: 'timestamp', default: () => CURRENT_TIMESTAMP })
   created_at: Date;
@@ -56,4 +48,20 @@ export class Utilisateur {
     onUpdate: CURRENT_TIMESTAMP,
   })
   updated_at: Date;
+
+  @Column({ name: 'id_role', nullable: false })
+  id_role: number;
+
+  @ManyToOne(() => Role, (role) => role.users)
+  @JoinColumn({ name: 'id_role' })
+  role: Role;
+
+  @OneToMany(() => Exploitation, (exploitation) => exploitation.user_)
+  exploitations: Exploitation[];
+
+  @ManyToOne(() => Harvest, (harvest) => harvest.user_)
+  harvests: Harvest;
+
+  @OneToMany(() => Order, (order) => order.user_)
+  orders: Order[];
 }

@@ -1,28 +1,36 @@
+import 'reflect-metadata';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { Module } from '@nestjs/common';
-import { Utilisateur } from './entities/utilisateur.entity';
 import { UsersModule } from './users/users.module';
 import { JwtModule } from '@nestjs/jwt';
 import { Amendement } from './entities/amendement.entity';
-import { Arrosage } from './entities/arrosage.entity';
-import { CommandeFournisseur } from './entities/commandeFournisseur.entity';
 import { Exploitation } from './entities/exploitation.entity';
-import { Famille } from './entities/famille.entity';
-import { Legume } from './entities/legume.entity';
-import { Planche } from './entities/planche.entity';
-import { PlanSection } from './entities/planSection.entity';
-import { Recolte } from './entities/recolte.entity';
+import { SectionPlan } from './entities/section_plan.entity';
 import { Role } from './entities/role.entity';
 import { Section } from './entities/section.entity';
 import { Sole } from './entities/sole.entity';
-import { TypeAmendement } from './entities/typeAmendement.entity';
+import { LegumeModule } from './vegetables/legume.module';
+import { ExploitationModule } from './exploitations/exploitation.module';
+import { Watering } from './entities/watering.entity';
+import { Order } from './entities/order.entity';
+import { Board } from './entities/board.entity';
+import { Family } from './entities/family.entity';
+import { Vegetable } from './entities/vegetable.entity';
+import { Harvest } from './entities/harvest.entity';
+import { User_ } from './entities/user_.entity';
+import { OrderDetail } from './entities/order-details.entity';
+import { Family_importance } from './entities/family_importance.entity';
+import { Price } from './entities/price.entity';
+import { Amended } from './entities/amended.entity';
+import { Treated } from './entities/treated.entity';
+import { Treatment } from './entities/treatment.entity';
 
 @Module({
   imports: [
-     ConfigModule.forRoot({
+    ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: `.env.${process.env.NODE_ENV || 'dev'}`, 
+      envFilePath: `.env.${process.env.NODE_ENV || 'dev'}`,
     }),
     TypeOrmModule.forRoot({
       type: process.env.DB_TYPE as any,
@@ -33,28 +41,37 @@ import { TypeAmendement } from './entities/typeAmendement.entity';
       database: process.env.DB_DATABASE,
       entities: [
         Amendement,
-        Arrosage,
-        CommandeFournisseur,
+        Watering,
+        Order,
         Exploitation,
-        Famille,
-        Legume,
-        Planche,
-        PlanSection,
-        Recolte,
+        Family,
+        Vegetable,
+        Board,
+        SectionPlan,
+        Harvest,
         Role,
         Section,
         Sole,
-        TypeAmendement,
-        Utilisateur,
+        User_,
+        OrderDetail,
+        Family_importance,
+        Price,
+        Amended,
+        Board,
+        Treated,
+        Treatment,
       ],
       // autoLoadEntities: true,
       synchronize: true,
+      // synchronize: false // pour generer le script de la DB
     }),
     UsersModule,
     JwtModule.register({
       secret: 'secretKey',
       signOptions: { expiresIn: '1h' },
     }),
+    ExploitationModule,
+    LegumeModule,
   ],
   controllers: [],
   providers: [],

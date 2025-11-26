@@ -6,7 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Exploitation } from './exploitation.entity';
-import { Planche } from './planche.entity';
+import { Board } from './board.entity';
 
 @Entity()
 export class Sole {
@@ -14,17 +14,11 @@ export class Sole {
   id_sole: number;
 
   @Column()
-  numero: number;
-
-  @Column()
-  nom_culture: string;
-
-  @Column('json', { nullable: true })
-  photos: string[];
+  sole_name: string;
 
   @ManyToOne(() => Exploitation, (exploitation) => exploitation.soles)
   exploitation: Exploitation;
 
-  @OneToMany(() => Planche, (planche) => planche.sole)
-  planches: Planche[];
+  @OneToMany(() => Board, (board) => board.sole)
+  boards: Board[];
 }

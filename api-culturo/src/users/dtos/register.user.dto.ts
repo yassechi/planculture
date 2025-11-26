@@ -14,13 +14,13 @@ export class RegisterDTO {
   @IsNotEmpty()
   @Length(2, 100)
   @ApiProperty({ description: "The user's surname" })
-  nom: string;
+  user_last_name: string;
 
   @IsString()
   @IsNotEmpty()
   @Length(2, 100)
   @ApiProperty({ description: "The user's first name" })
-  prenom: string;
+  user_first_name: string;
 
   @IsEmail()
   @IsNotEmpty()
@@ -37,7 +37,7 @@ export class RegisterDTO {
   @IsString()
   @MaxLength(16)
   @ApiProperty({ description: "The user's telephone number" })
-  telephone: string;
+  phone: string;
 
   @IsNumber()
   @IsNotEmpty()
@@ -46,9 +46,37 @@ export class RegisterDTO {
 
   @IsBoolean()
   @ApiProperty({ description: "Active or inactive user" })
-  is_active: boolean;
+  user_active: boolean;
 
   @IsString()
   @ApiProperty({ description: "The path to the user's photo" })
-  photo: string;
+  path_photo: string;
 }
+
+
+// @PrimaryGeneratedColumn()
+//   id_user: number;
+
+//   @Column({ type: 'varchar', length: '100' })
+//   user_first_name: string;
+
+//   @Column({ type: 'varchar', length: '100' })
+//   user_last_name: string;
+
+//   @Column({ type: 'varchar', length: '150', unique: true })
+//   email: string;
+
+//   @Column({ type: 'varchar' })
+//   hpassword: string;
+
+//   @Column({ type: 'varchar' })
+//   phone: string;
+
+//   @Column({ type: 'varchar', nullable: true })
+//   path_photo: string;
+
+//   @Column({ type: 'boolean', default: true })
+//   user_active: boolean;
+
+//   @CreateDateColumn({ type: 'timestamp', default: () => CURRENT_TIMESTAMP })
+//   created_at: Date;

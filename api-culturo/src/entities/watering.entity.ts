@@ -2,16 +2,16 @@ import { Section } from './section.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
-export class Arrosage {
+export class Watering {
   @PrimaryGeneratedColumn()
-  id_arrosage: number;
+  id_watering: number;
 
   @Column({ type: 'timestamp' })
-  date_arrosage: Date;
+  watering_date: Date;
 
   @Column()
-  quantite: number;
+  quantity: number;
 
-  @ManyToOne(() => Section, (section) => section.arrosages)
+  @ManyToOne(() => Section, (section) => section.waterings)
   section: Section;
 }
