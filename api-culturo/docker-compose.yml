@@ -25,5 +25,7 @@ services:
       DB_USERNAME: culturo
       DB_PASSWORD: culturo
       DB_DATABASE: culturo
+    env_file:
+      - .env.prod
 volumes:
   culturo_data:

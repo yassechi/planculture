@@ -2,7 +2,7 @@ import { Board } from 'src/entities/board.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Amendement } from './amendement.entity';
 
-@Entity()
+@Entity({})
 export class Amended {
   @PrimaryGeneratedColumn()
   id_treated: number;

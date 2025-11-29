@@ -73,8 +73,8 @@ export class UsersController {
     return this.userService.login(loginDto);
   }
 
-  @UseGuards(AuthChard)
-  @Post('current')
+  // @UseGuards(AuthChard)
+  @Post('current')////////
   @ApiSecurity('bearer')
   @ApiOperation({ summary: 'Get User By Token' })
   public getCurrentUser(@CurrentUser() payload: JWTPayloadType) {

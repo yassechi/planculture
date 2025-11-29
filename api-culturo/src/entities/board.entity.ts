@@ -1,5 +1,5 @@
 import { SectionPlan } from './section_plan.entity';
-import { Column, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Sole } from "./sole.entity";
 import { Amended } from './amended.entity';
 import { Treated } from './treated.entity';
@@ -21,7 +21,11 @@ export class Board {
     @Column()
     board_active : boolean;
 
+     @Column()
+    id_sole : number;
+
     @ManyToOne(() => Sole, (sole) => sole.boards)
+    @JoinColumn({name:'id_sole'})
     sole : Sole;
 
     @ManyToMany(()=> SectionPlan, (sectionPlan) => sectionPlan.boards)
