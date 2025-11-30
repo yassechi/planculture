@@ -23,6 +23,6 @@ export class Family {
   )
   family_importance: Family_importance;
 
-  @OneToMany(() => Vegetable, (vegetable) => vegetable.id_vegetable)
+  @OneToMany(() => Vegetable, (vegetable) => vegetable.family)
   vegetables: Vegetable[];
 }

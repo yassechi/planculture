@@ -8,10 +8,11 @@ import { ConfigService } from '@nestjs/config';
 import { VegetableController } from './vegetables/vegetable.controller';
 import { VegetableService } from './vegetables/vegetable.service';
 import { FamilyService } from './families/family.service';
+import { Family_importance } from 'src/entities/family_importance.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Family, Vegetable]),
+    TypeOrmModule.forFeature([Family, Vegetable, Family_importance]),
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
