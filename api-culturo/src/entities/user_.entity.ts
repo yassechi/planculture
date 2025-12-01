@@ -23,6 +23,10 @@ export class User_ {
 
   @Column({ type: 'varchar', length: '100' })
   user_last_name: string;
+  
+  @Column({ type: 'date' })
+  birth_day: Date;
+
 
   @Column({ type: 'varchar', length: '150', unique: true })
   email: string;

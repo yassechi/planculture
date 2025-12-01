@@ -35,6 +35,23 @@ export class UsersService {
 
   /**
    *
+   * @returns
+   */
+  async getActiveUsers(): Promise<User_[]> {
+    return await this.userRepository.find({ where: { user_active: true } });
+  }
+
+  /**
+   *
+   * @returns
+   */
+  async getInactivatedUsers(): Promise<User_[]> {
+    return await this.userRepository.find({ where: { user_active: false } });
+  }
+
+
+  /**
+   *
    * @param id
    * @returns
    */

@@ -39,6 +39,21 @@ export class UsersController {
     return await this.userService.getAllUsers();
   }
 
+    @Get('active')
+  @ApiResponse({ status: 200, description: 'Users Active fetched successfully' })
+  @ApiOperation({ summary: 'Get all Active users' })
+  async getActiveUsers() {
+    return await this.userService.getActiveUsers();
+  }
+
+      @Get('inactive')
+  @ApiResponse({ status: 200, description: 'Users Inactive fetched successfully' })
+  @ApiOperation({ summary: 'Get all Inactive users' })
+  async getInactivatedUsers() {
+    return await this.userService.getInactivatedUsers();
+  }
+
+
   @Get('/:id')
   @ApiOperation({ summary: 'Get User by Id' })
   async getOneUser(@Param('id') id: number) {
