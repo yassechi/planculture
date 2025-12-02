@@ -14,6 +14,7 @@ import { AccessTokenType, JWTPayloadType } from 'src/utils/types';
 import { ConfigService } from '@nestjs/config';
 import { UpdateUserDTO } from './dtos/update.user.dto';
 import { User_ } from 'src/entities/user_.entity';
+import { stat } from 'fs';
 
 @Injectable()
 export class UsersService {
@@ -30,7 +31,6 @@ export class UsersService {
    * @returns
    */
   async getAllUsers(): Promise<User_[]> {
-    throw new BadRequestException({ message: 'Erreur de connexion à la base de données' });
     return await this.userRepository.find();
   }
 
@@ -50,7 +50,6 @@ export class UsersService {
     return await this.userRepository.find({ where: { user_active: false } });
   }
 
-
   /**
    *
    * @param id
@@ -65,13 +64,16 @@ export class UsersService {
    * @param id
    * @returns
    */
-  async setUserActiveStatus(id: number, active: boolean): Promise<User_> {
+  async setUserActiveStatus(id: number, status: string): Promise<User_> {
+    const myStatus: boolean =
+      status === 'true' ? true : status === 'false' ? false : false;
+
     const user = await this.userRepository.findOne({ where: { id_user: id } });
     if (!user) {
       throw new NotFoundException(`Utilisateur avec id ${id} non trouvé`);
     }
 
-    user.user_active = active;
+    user.user_active = myStatus;
     return await this.userRepository.save(user);
   }
 
@@ -84,63 +86,93 @@ export class UsersService {
     updateData: UpdateUserDTO,
   ): Promise<{ status: number; msg: string }> {
     const user = await this.userRepository.findOne({
-      where: { id_user: updateData.id_utilisateur },
+      where: { id_user: updateData.id_user },
       relations: ['role'],
     });
+
     if (!user) {
-      // throw new NotFoundException('Utilisateur introuvable');
-      return { status: 404, msg: 'Not Found User ' };
+      return { status: 404, msg: 'Not Found User' };
     }
-    // Mise à jour du rôle si fourni
+
+    // --- Rôle ---
     if (updateData.id_role) {
       const role = await this.roleRepository.findOne({
         where: { id_role: updateData.id_role },
       });
+
       if (!role) {
         throw new BadRequestException('Role introuvable');
       }
-      user.role = role; //////////////////////////////////////
+
+      user.role = role;
+      user.id_role = updateData.id_role; // IMPORTANT !
     }
-    // Mise à jour du mot de passe si changement
+
+    // --- Mot de passe ---
     if (updateData.hpassword) {
       user.hpassword = await bcrypt.hash(updateData.hpassword, 10);
     }
-    // Mise à jour des autres champs
-    Object.assign(user, updateData);
+
+    // --- Mise à jour des champs simples ---
+    if (updateData.user_first_name !== undefined)
+      user.user_first_name = updateData.user_first_name;
+
+    if (updateData.user_last_name !== undefined)
+      user.user_last_name = updateData.user_last_name;
+
+    if (updateData.birth_day !== undefined)
+      user.birth_day = updateData.birth_day;
+
+    if (updateData.email !== undefined) user.email = updateData.email;
+
+    if (updateData.phone !== undefined) user.phone = updateData.phone;
+
+    if (updateData.path_photo !== undefined)
+      user.path_photo = updateData.path_photo;
+
+    if (updateData.user_active !== undefined)
+      user.user_active = updateData.user_active;
+
     await this.userRepository.save(user);
+
     return { status: 200, msg: 'Utilisateur mis à jour avec succès' };
   }
 
-  /**
-   * Methode of create user
-   * @param registerDto data for creating user
-   * @returns JWT (acces token)
-   */
   public async register(registerDto: RegisterDTO) {
     const { email, hpassword, id_role } = registerDto;
-    const userFromDb = await this.userRepository.findOne({
-      where: { email },
-    });
+
+    // --- Vérification email ---
+    const userFromDb = await this.userRepository.findOne({ where: { email } });
     if (userFromDb) throw new BadRequestException('User already exists');
-    const hashedPassword = await bcrypt.hash(hpassword, 10);
+
+    // --- Vérification rôle ---
     const roleFromDb = await this.roleRepository.findOne({
       where: { id_role },
     });
     if (!roleFromDb) throw new BadRequestException('Role not found');
+
+    // --- Hash password ---
+    const hashedPassword = await bcrypt.hash(hpassword, 10);
+
+    // --- Création user ---
     const newUser = this.userRepository.create({
       ...registerDto,
       hpassword: hashedPassword,
-      role: roleFromDb,
+      role: roleFromDb, // Relation ManyToOne
+      id_role: roleFromDb.id_role, // IMPORTANT pour remplir la FK
     });
+
     const savedUser = await this.userRepository.save(newUser);
 
+    // --- JWT Payload ---
     const payload: JWTPayloadType = {
       id: savedUser.id_user,
       email: savedUser.email,
-      id_role: savedUser.role.id_role,
+      id_role: savedUser.id_role,
     };
 
     const accessToken = await this.jwtService.signAsync(payload);
+
     return { id: savedUser.id_user, accessToken };
   }
 
@@ -152,6 +184,7 @@ export class UsersService {
   public async login(loginDTo: LoginDTO) {
     const { email, hpassword } = loginDTo;
     const userFromDb = await this.userRepository.findOne({ where: { email } });
+    console.log('userFromDb:', userFromDb);
     if (!userFromDb) throw new BadRequestException('unregistered user');
     const isPassMatch = await bcrypt.compare(hpassword, userFromDb.hpassword);
     if (!isPassMatch) throw new BadRequestException('invalid password');
@@ -170,11 +203,17 @@ export class UsersService {
    * @param id  Id of the user logged
    * @returns the user from the database
    */
-  public async getCurrentUser(id: number) {
-    const userFromDb = await this.userRepository.findOne({
-      where: { id_user: id },
+  public async getUserByToken(token: string): Promise<User_> {
+    if (!token) throw new NotFoundException('Token missing');
+
+    const payload = this.jwtService.decode(token) as JWTPayloadType;
+    if (!payload || !payload.id) throw new NotFoundException('Token invalide');
+
+    const user = await this.userRepository.findOne({
+      where: { id_user: payload.id },
     });
-    if (!userFromDb) throw new NotFoundException('User Not Found !');
-    return userFromDb;
+    if (!user) throw new NotFoundException('Utilisateur introuvable');
+
+    return user;
   }
 }

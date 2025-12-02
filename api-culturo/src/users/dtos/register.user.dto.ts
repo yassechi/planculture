@@ -1,5 +1,6 @@
 import {
   IsBoolean,
+  IsDate,
   IsEmail,
   IsNotEmpty,
   IsNumber,
@@ -22,6 +23,11 @@ export class RegisterDTO {
   @ApiProperty({ description: "The user's first name" })
   user_first_name: string;
 
+  @IsDate()
+  @IsNotEmpty()
+  @ApiProperty({ description: "The user's BirthDay" })
+  birth_day: Date;
+
   @IsEmail()
   @IsNotEmpty()
   @MaxLength(150)
@@ -41,18 +47,17 @@ export class RegisterDTO {
 
   @IsNumber()
   @IsNotEmpty()
-  @ApiProperty({ description: "The role ID of this user" })
+  @ApiProperty({ description: 'The role ID of this user' })
   id_role: number;
 
   @IsBoolean()
-  @ApiProperty({ description: "Active or inactive user" })
+  @ApiProperty({ description: 'Active or inactive user' })
   user_active: boolean;
 
   @IsString()
   @ApiProperty({ description: "The path to the user's photo" })
   path_photo: string;
 }
-
 
 // @PrimaryGeneratedColumn()
 //   id_user: number;

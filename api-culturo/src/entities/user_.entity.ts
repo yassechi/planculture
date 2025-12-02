@@ -27,7 +27,6 @@ export class User_ {
   @Column({ type: 'date' })
   birth_day: Date;
 
-
   @Column({ type: 'varchar', length: '150', unique: true })
   email: string;
 

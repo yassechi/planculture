@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -10,6 +11,7 @@ import {
   Patch,
   Post,
   Put,
+  Headers,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
@@ -24,8 +26,10 @@ import {
   ApiOperation,
   ApiResponse,
   ApiSecurity,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { UpdateUserDTO } from './dtos/update.user.dto';
+import { TLSSocket } from 'tls';
 
 @ApiTags('User Group')
 @Controller('users')
@@ -36,23 +40,29 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'Users fetched successfully' })
   @ApiOperation({ summary: 'Get all users' })
   async getAllUsers() {
+    // console.log("tu es dans Get All Users");
     return await this.userService.getAllUsers();
   }
 
-    @Get('active')
-  @ApiResponse({ status: 200, description: 'Users Active fetched successfully' })
+  @Get('active')
+  @ApiResponse({
+    status: 200,
+    description: 'Users Active fetched successfully',
+  })
   @ApiOperation({ summary: 'Get all Active users' })
   async getActiveUsers() {
     return await this.userService.getActiveUsers();
   }
 
-      @Get('inactive')
-  @ApiResponse({ status: 200, description: 'Users Inactive fetched successfully' })
+  @Get('inactive')
+  @ApiResponse({
+    status: 200,
+    description: 'Users Inactive fetched successfully',
+  })
   @ApiOperation({ summary: 'Get all Inactive users' })
   async getInactivatedUsers() {
     return await this.userService.getInactivatedUsers();
   }
-
 
   @Get('/:id')
   @ApiOperation({ summary: 'Get User by Id' })
@@ -63,16 +73,18 @@ export class UsersController {
   @Put()
   @ApiOperation({ summary: 'Update User' })
   async updateUser(@Body() updateUserDto: UpdateUserDTO) {
+    console.log('tu es dans Update User');
+
     return await this.userService.updateUser(updateUserDto);
   }
 
-  @Patch(':id/status')
+  @Patch('status/:id/:status')
   @ApiOperation({ summary: 'Disactivate User' })
   async setUserStatus(
     @Param('id', ParseIntPipe) id: number,
-    @Body('active') active: boolean,
+    @Param('status') status: string,
   ) {
-    return this.userService.setUserActiveStatus(id, active);
+    return this.userService.setUserActiveStatus(id, status);
   }
 
   @Post('register')
@@ -89,10 +101,15 @@ export class UsersController {
   }
 
   // @UseGuards(AuthChard)
-  @Post('current')////////
-  @ApiSecurity('bearer')
-  @ApiOperation({ summary: 'Get User By Token' })
-  public getCurrentUser(@CurrentUser() payload: JWTPayloadType) {
-    return this.userService.getCurrentUser(payload.id);
+  // @ApiSecurity('bearer')
+ @Post('current')
+  @ApiOperation({ summary: 'Get Current User (from token)' })
+  @ApiBearerAuth() // ⚡ pour Swagger
+  public async getCurrentUser(@Headers('authorization') authHeader: string) {
+    if (!authHeader)
+      throw new BadRequestException('Authorization header missing');
+
+    const token = authHeader.split(' ')[1]; // récupère juste le JWT
+    return await this.userService.getUserByToken(token);
   }
 }

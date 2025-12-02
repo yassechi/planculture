@@ -5,50 +5,56 @@ import {
   IsString,
   IsNumber,
   IsBoolean,
+  IsDate,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 export class UpdateUserDTO {
   @IsNumber()
-  @ApiProperty({ description: '' })
-  id_utilisateur: number;
+  @ApiProperty({ description: 'User ID' })
+  id_user: number;
 
   @IsOptional()
   @IsString()
-  @ApiProperty({ description: '' })
-  nom?: string;
+  @ApiProperty({ description: 'User first name' })
+  user_first_name?: string;
 
   @IsOptional()
   @IsString()
-  @ApiProperty({ description: '' })
-  prenom?: string;
+  @ApiProperty({ description: 'User last name' })
+  user_last_name?: string;
+
+  @IsOptional()
+  @IsDate()
+  @ApiProperty({ description: 'User birth date' })
+  birth_day?: Date;
 
   @IsOptional()
   @IsEmail()
-  @ApiProperty({ description: '' })
+  @ApiProperty({ description: 'User email' })
   email?: string;
 
   @IsOptional()
   @IsString()
-  @ApiProperty({ description: '' })
+  @ApiProperty({ description: 'User hashed password' })
   hpassword?: string;
 
   @IsOptional()
   @IsString()
-  @ApiProperty({ description: '' })
-  telephone?: string;
-
-  @IsOptional()
-  @IsNumber()
-  @ApiProperty({ description: '' })
-  id_role?: number;
+  @ApiProperty({ description: 'User telephone' })
+  phone?: string;
 
   @IsOptional()
   @IsString()
-  @ApiProperty({ description: '' })
-  photo?: string;
+  @ApiProperty({ description: 'User photo' })
+  path_photo?: string;
 
   @IsOptional()
   @IsBoolean()
-  @ApiProperty({ description: '' })
+  @ApiProperty({ description: 'User active status' })
   user_active?: boolean;
+
+  @IsOptional()
+  @IsNumber()
+  @ApiProperty({ description: 'User role ID' })
+  id_role?: number;
 }
