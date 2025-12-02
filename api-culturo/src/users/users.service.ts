@@ -23,7 +23,8 @@ export class UsersService {
     private readonly userRepository: Repository<User_>,
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>,
-    private readonly jwtService: JwtService,
+    private readonly config: ConfigService,
+    private readonly jwtService: JwtService, // Problem ENV
   ) {}
 
   /**
@@ -203,17 +204,10 @@ export class UsersService {
    * @param id  Id of the user logged
    * @returns the user from the database
    */
-  public async getUserByToken(token: string): Promise<User_> {
-    if (!token) throw new NotFoundException('Token missing');
-
-    const payload = this.jwtService.decode(token) as JWTPayloadType;
-    if (!payload || !payload.id) throw new NotFoundException('Token invalide');
-
-    const user = await this.userRepository.findOne({
-      where: { id_user: payload.id },
-    });
-    if (!user) throw new NotFoundException('Utilisateur introuvable');
-
+  public async getCurrentUser(id : number) : Promise<User_> {
+    const user = await this.userRepository.findOneBy({ id_user: id });
+    if (!user) throw new NotFoundException('User not found');
     return user;
   }
+    
 }

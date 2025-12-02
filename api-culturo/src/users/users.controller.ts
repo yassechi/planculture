@@ -1,8 +1,6 @@
 import {
-  BadRequestException,
   Body,
   Controller,
-  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -11,7 +9,6 @@ import {
   Patch,
   Post,
   Put,
-  Headers,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
@@ -29,7 +26,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { UpdateUserDTO } from './dtos/update.user.dto';
-import { TLSSocket } from 'tls';
+import { User_ } from 'src/entities/user_.entity';
 
 @ApiTags('User Group')
 @Controller('users')
@@ -40,7 +37,6 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'Users fetched successfully' })
   @ApiOperation({ summary: 'Get all users' })
   async getAllUsers() {
-    // console.log("tu es dans Get All Users");
     return await this.userService.getAllUsers();
   }
 
@@ -100,16 +96,22 @@ export class UsersController {
     return this.userService.login(loginDto);
   }
 
-  // @UseGuards(AuthChard)
-  // @ApiSecurity('bearer')
- @Post('current')
+  @ApiSecurity('bearer')
+  @Post('current')
+  @UseGuards(AuthChard)
   @ApiOperation({ summary: 'Get Current User (from token)' })
-  @ApiBearerAuth() // ⚡ pour Swagger
-  public async getCurrentUser(@Headers('authorization') authHeader: string) {
-    if (!authHeader)
-      throw new BadRequestException('Authorization header missing');
-
-    const token = authHeader.split(' ')[1]; // récupère juste le JWT
-    return await this.userService.getUserByToken(token);
+  public async getCurrentUser(
+    @CurrentUser() paylod: JWTPayloadType,
+  ): Promise<User_> {
+    return this.userService.getCurrentUser(paylod.id);
   }
+
+  // @ApiSecurity('bearer')
+  // @Post('current')
+  // @UseGuards(AuthChard)
+  // @ApiOperation({ summary: 'Get Current User (from token)' })
+  // public async getCurrentUser(@Req() request: any): Promise<User_> {
+  //   const id = request[CURRENT_USER].id;
+  //   return this.userService.getCurrentUser(id);
+  // }
 }
