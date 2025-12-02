@@ -13,13 +13,13 @@ async function bootstrap() {
   // Swagger Config
   const config = new DocumentBuilder()
     .setTitle('Culturo API')
-    .setDescription('L\'API de la gestion de l\'application Culturo')
-    .addServer("http://localhost:3000")
-    .setTermsOfService("http://localhost:3000/terms-of-service")
-    .setLicense("MIT License", "https://google.com")
-    .setVersion('1.0') 
-    .addSecurity('bearer', {type:'http', scheme:'bearer'}) //Pour l'auth Token
-    .addBearerAuth()//Pour l'auth Token
+    .setDescription("L'API de la gestion de l'application Culturo")
+    .addServer('http://localhost:3000')
+    .setTermsOfService('http://localhost:3000/terms-of-service')
+    .setLicense('MIT License', 'https://google.com')
+    .setVersion('1.0')
+    .addSecurity('bearer', { type: 'http', scheme: 'bearer' }) //Pour l'auth Token
+    .addBearerAuth() //Pour l'auth Token
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

@@ -1,5 +1,7 @@
 import 'reflect-metadata';
-import { DataSource } from 'typeorm';
+import { DataSource, DataSourceOptions } from 'typeorm';
+import { Logger } from '@nestjs/common';
+
 import { User_ } from './entities/user_.entity';
 import { Role } from './entities/role.entity';
 import { Amendement } from './entities/amendement.entity';
@@ -20,13 +22,13 @@ import { Amended } from './entities/amended.entity';
 import { Treated } from './entities/treated.entity';
 import { Treatment } from './entities/treatment.entity';
 
-export const AppDataSource = new DataSource({
+export const AppDataSourceOptions: DataSourceOptions = {
   type: 'postgres',
-  host: process.env.DB_HOST || 'localhost',
-  port: +(process.env.DB_PORT || 5432),
-  username: process.env.DB_USERNAME || 'postgres',
-  password: process.env.DB_PASSWORD || 'root',
-  database: process.env.DB_DATABASE || 'culturo',
+  host: process.env.DB_HOST,
+  port: parseInt(process.env.DB_PORT ?? '5432'),
+  username: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
   entities: [
     User_,
     Role,
@@ -43,11 +45,28 @@ export const AppDataSource = new DataSource({
     Sole,
     OrderDetail,
     Family_importance,
-    Price, 
+    Price,
     Amended,
     Treated,
-    Treatment
+    Treatment,
   ],
-  synchronize: false, // IMPORTANT ici, on veut juste générer le SQL
-  logging: false,
-});
+  synchronize: true, // dev uniquement
+};
+
+export const AppDataSource = new DataSource(AppDataSourceOptions);
+
+// Test de connexion
+async function testConnection() {
+  const logger = new Logger('DataSourceTest');
+
+  try {
+    await AppDataSource.initialize();
+    logger.log('Database connected successfully');
+    await AppDataSource.destroy();
+  } catch (error) {
+    logger.error('Failed to connect to the database');
+    logger.error(error);
+  }
+}
+
+testConnection();
