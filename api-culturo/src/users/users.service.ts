@@ -30,6 +30,7 @@ export class UsersService {
    * @returns
    */
   async getAllUsers(): Promise<User_[]> {
+    throw new BadRequestException({ message: 'Erreur de connexion à la base de données' });
     return await this.userRepository.find();
   }
 

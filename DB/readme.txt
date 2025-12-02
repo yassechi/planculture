@@ -8,7 +8,7 @@ Run :
             $ mot de pass : root
         - se mettre dans le DB culturo
             \c culturo
-        - verifier l'existance des table dans la DB
+        - verifier l'existance des tables dans la DB
             \d
         - copie contenu de fichier insert.sql et le coller dans la DB
         - verifier si les données sont présent avec des select des tables.
