@@ -16,6 +16,9 @@ export class Vegetable {
   id_vegetable: number;
 
   @Column()
+  variety_name: string;
+
+  @Column()
   vegetable_name: string;
 
   @Column()

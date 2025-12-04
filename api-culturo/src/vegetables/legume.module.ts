@@ -9,10 +9,11 @@ import { VegetableController } from './vegetables/vegetable.controller';
 import { VegetableService } from './vegetables/vegetable.service';
 import { FamilyService } from './families/family.service';
 import { Family_importance } from 'src/entities/family_importance.entity';
+import { Section } from 'src/entities/section.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Family, Vegetable, Family_importance]),
+    TypeOrmModule.forFeature([Family, Vegetable, Family_importance, Section]),
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {

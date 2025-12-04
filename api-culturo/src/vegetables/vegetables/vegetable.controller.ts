@@ -46,4 +46,10 @@ export class VegetableController {
   async delVegetable(@Param('id') id: number) {
     return this.vegetableService.delVegetable(id);
   }
+
+  @Get('can/:idBoard/:idVegetable')
+  @ApiOperation({ summary: 'Get can plante this vegetable' })
+  async canPlantVegetable(@Param('idBoard') idBoard:number, @Param('idVegetable') idVegetable:number){
+    return this.vegetableService.canPlantVegetable(idBoard, idVegetable);
+  }
 }
