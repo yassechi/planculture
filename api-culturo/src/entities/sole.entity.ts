@@ -16,6 +16,9 @@ export class Sole {
   @Column()
   sole_name: string;
 
+  @Column({ default: true })
+  sole_active: boolean;
+
   @ManyToOne(() => Exploitation, (exploitation) => exploitation.soles)
   exploitation: Exploitation;
 

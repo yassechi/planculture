@@ -9,6 +9,6 @@ export class Treatment {
   @Column()
   treatment_name: string;
 
-  @OneToMany(()=>Treated, (treated) => treated.treatment)
-  treateds : Treated[]
+  @OneToMany(() => Treated, (treated) => treated.treatment)
+  treateds: Treated[];
 }

@@ -8,7 +8,7 @@ export class Amended {
   id_treated: number;
 
   @Column()
-  amendement_date: Date;
+  amendment_date: Date;
   @Column()
   treatment_quantity: number;
   @Column()

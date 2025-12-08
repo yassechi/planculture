@@ -19,9 +19,12 @@ export class SectionPlan {
   @Column()
   number_of_section: number;
 
-  @OneToMany(()=>Section, (section) => section.sectionPlan)
-  sections : Section[];
+  @Column()
+  section_plan_active: number;
 
-  @ManyToMany(()=> Board, (board) => board.sectionPlans)
-  boards : Board[]
+  @OneToMany(() => Section, (section) => section.sectionPlan)
+  sections: Section[];
+
+  @ManyToMany(() => Board, (board) => board.sectionPlans)
+  board: Board;
 }

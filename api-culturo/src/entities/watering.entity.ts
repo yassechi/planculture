@@ -9,9 +9,6 @@ export class Watering {
   @Column({ type: 'timestamp' })
   watering_date: Date;
 
-  @Column()
-  quantity: number;
-
   @ManyToOne(() => Section, (section) => section.waterings)
   section: Section;
 }

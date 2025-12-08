@@ -16,7 +16,7 @@ export class Harvest {
   id_harvest: number;
 
   @Column({ type: 'timestamp' })
-  id_harvest_date: Date;
+  harvest_date: Date;
 
   @Column()
   quantity: number;

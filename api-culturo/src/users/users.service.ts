@@ -10,11 +10,10 @@ import { RegisterDTO } from './dtos/register.user.dto';
 import bcrypt from 'node_modules/bcryptjs';
 import { LoginDTO } from './dtos/login.dto';
 import { JwtService } from '@nestjs/jwt';
-import { AccessTokenType, JWTPayloadType } from 'src/utils/types';
 import { ConfigService } from '@nestjs/config';
 import { UpdateUserDTO } from './dtos/update.user.dto';
 import { User_ } from 'src/entities/user_.entity';
-import { stat } from 'fs';
+import { JWTPayloadType } from 'src/utils/types';
 
 @Injectable()
 export class UsersService {
@@ -122,7 +121,7 @@ export class UsersService {
       user.user_last_name = updateData.user_last_name;
 
     if (updateData.birth_day !== undefined)
-      user.birth_day = updateData.birth_day;
+      user.birth_date = updateData.birth_day;
 
     if (updateData.email !== undefined) user.email = updateData.email;
 
@@ -204,10 +203,9 @@ export class UsersService {
    * @param id  Id of the user logged
    * @returns the user from the database
    */
-  public async getCurrentUser(id : number) : Promise<User_> {
+  public async getCurrentUser(id: number): Promise<User_> {
     const user = await this.userRepository.findOneBy({ id_user: id });
     if (!user) throw new NotFoundException('User not found');
     return user;
   }
-    
 }

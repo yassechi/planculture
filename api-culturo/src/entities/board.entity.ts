@@ -11,7 +11,6 @@ import {
 import { Sole } from './sole.entity';
 import { Amended } from './amended.entity';
 import { Treated } from './treated.entity';
-import { Section } from './section.entity';
 
 @Entity()
 export class Board {
@@ -25,7 +24,7 @@ export class Board {
   board_width: number;
 
   @Column()
-  board_lenght: number;
+  board_length: number;
 
   @Column()
   board_active: boolean;
@@ -37,7 +36,7 @@ export class Board {
   @JoinColumn({ name: 'id_sole' })
   sole: Sole;
 
-  @ManyToMany(() => SectionPlan, (sectionPlan) => sectionPlan.boards)
+  @ManyToMany(() => SectionPlan, (sectionPlan) => sectionPlan.board)
   sectionPlans: SectionPlan[];
 
   @OneToMany(() => Amended, (amended) => amended.board)
@@ -45,7 +44,4 @@ export class Board {
 
   @OneToMany(() => Treated, (treated) => treated.board)
   treateds: Treated[];
-
-  @OneToMany(() => Section, (section) => section.board)
-  sections: Section[];
 }

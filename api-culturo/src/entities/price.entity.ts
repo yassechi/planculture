@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Vegetable } from './vegetable.entity';
 
 @Entity()
@@ -12,9 +12,6 @@ export class Price {
   @Column()
   active_price: boolean;
 
-
-  @ManyToOne(()=> Vegetable, (vegetable) => vegetable.prices)
-  vegetable : Vegetable;
-
-
+  @ManyToOne(() => Vegetable, (vegetable) => vegetable.prices)
+  vegetable: Vegetable;
 }

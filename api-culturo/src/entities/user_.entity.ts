@@ -23,9 +23,9 @@ export class User_ {
 
   @Column({ type: 'varchar', length: '100' })
   user_last_name: string;
-  
+
   @Column({ type: 'date' })
-  birth_day: Date;
+  birth_date: Date;
 
   @Column({ type: 'varchar', length: '150', unique: true })
   email: string;
@@ -63,7 +63,7 @@ export class User_ {
   exploitations: Exploitation[];
 
   @ManyToOne(() => Harvest, (harvest) => harvest.user_)
-  harvests: Harvest;
+  harvest: Harvest;
 
   @OneToMany(() => Order, (order) => order.user_)
   orders: Order[];

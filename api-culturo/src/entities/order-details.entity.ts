@@ -5,7 +5,7 @@ import { Order } from './order.entity';
 @Entity()
 export class OrderDetail {
   @PrimaryGeneratedColumn()
-  id_treated: number;
+  id_orderDetail: number;
 
   @Column()
   quantity: number;

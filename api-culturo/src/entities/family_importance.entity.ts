@@ -10,5 +10,5 @@ export class Family_importance {
   importance_name: string;
 
   @OneToMany(() => Family, (family) => family.id_family)
-  families : Family[]
+  families: Family[];
 }

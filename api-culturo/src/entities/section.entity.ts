@@ -9,7 +9,6 @@ import {
 import { Watering } from './watering.entity';
 import { Harvest } from './harvest.entity';
 import { Vegetable } from './vegetable.entity';
-import { Board } from './board.entity';
 
 @Entity()
 export class Section {
@@ -23,10 +22,13 @@ export class Section {
   start_date: Date;
 
   @Column()
-  quantity_planted : number;
+  quantity_planted: number;
 
   @Column({ type: 'timestamp' })
   end_date: Date;
+
+  @Column()
+  section_active: boolean;
 
   @OneToMany(() => Harvest, (harvest) => harvest.section)
   harvets: Harvest[];
@@ -37,9 +39,6 @@ export class Section {
   @OneToMany(() => Watering, (watering) => watering.section)
   waterings: Watering[];
 
-  @ManyToOne(() => Section, (section) => section.sectionPlan)
-  sectionPlan : SectionPlan;
-
-  @ManyToOne(() => Board, (board) => board.sections)
-board: Board;
+  @ManyToOne(() => SectionPlan, (sectionPlan) => sectionPlan.sections)
+  sectionPlan: SectionPlan;
 }

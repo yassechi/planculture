@@ -73,11 +73,7 @@ export class VegetableService {
     return { msg: 'Vegetable deleted successfully' };
   }
 
-  async canPlantVegetable(
-    boardId: number,
-    vegetableId: number,
-    bypass = true,
-  ) {
+  async canPlantVegetable(boardId: number, vegetableId: number, bypass = true) {
     // --- Récupération du légume + famille + importance ---
     const vegetable = await this.vegetableRepository.findOne({
       where: { id_vegetable: vegetableId },
@@ -97,7 +93,7 @@ export class VegetableService {
 
       const sections = await this.sectionRepository.find({
         where: {
-          board: { id_board: boardId },
+          // board: { id_board: boardId },
           start_date: MoreThan(fiveYearsAgo),
         },
         relations: ['vegetable', 'vegetable.family'],
@@ -143,7 +139,7 @@ export class VegetableService {
     //CHECK 2 - AUTRES FAMILLES PRIMAIRES SUR LA PLANCHE
     if (isPrimary) {
       const activeSections = await this.sectionRepository.find({
-        where: { board: { id_board: boardId } },
+        // where: { board: { id_board: boardId } },
         relations: [
           'vegetable',
           'vegetable.family',
@@ -217,17 +213,15 @@ export class VegetableService {
 
       // ------ Si famille primaire, vérifier l'historique 5 ans ---
       if (isPrimary) {
-        const boardSections = sections.filter(
-          (s) => s.board.id_board === section.board.id_board,
-        );
-
-        const familiesInLast5Years = boardSections
-          .filter((s) => s.start_date && s.start_date > fiveYearsAgo)
-          .map((s) => s.vegetable?.family?.id_family)
-          .filter(Boolean);
-
+        // const boardSections = sections.filter(
+        //   (s) => s.board.id_board === section.board.id_board,
+        // );
+        // const familiesInLast5Years = boardSections
+        //   .filter((s) => s.start_date && s.start_date > fiveYearsAgo)
+        //   .map((s) => s.vegetable?.family?.id_family)
+        //   .filter(Boolean);
         // Si la famille a déjà été plantée dans les 5 dernières années → on exclut
-        if (familiesInLast5Years.includes(family.id_family)) return false;
+        // if (familiesInLast5Years.includes(family.id_family)) return false;
       }
 
       // --- Si aucune restriction → section OK ---
