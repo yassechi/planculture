@@ -9,6 +9,7 @@ import {
 import { Section } from './section.entity';
 import { Family } from './family.entity';
 import { Price } from './price.entity';
+import { Variety } from './variety.entity';
 
 @Entity()
 export class Vegetable {
@@ -50,4 +51,7 @@ export class Vegetable {
 
   @OneToMany(() => OrderDetail, (orderDetail) => orderDetail.vegetable)
   orderDetails: OrderDetail[];
+
+  @OneToMany(() => Variety, (varity) => varity.vegetable)
+  varieties: Variety[];
 }
