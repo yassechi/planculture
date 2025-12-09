@@ -84,6 +84,7 @@ INSERT INTO sole (sole_name, "exploitationIdExploitation") VALUES
 ('SOLE Est', 3),
 ('SOLE Sud', 1);
 
+--
 INSERT INTO board (board_name, board_width, board_length, board_active, id_sole) VALUES
 ('Bande A01', 120, 500, TRUE, 1), ('Bande A02', 120, 500, TRUE, 1), ('Bande A03', 120, 500, TRUE, 1), ('Bande A04', 120, 500, TRUE, 1), ('Bande A05', 120, 500, TRUE, 1),
 ('Bande A06', 120, 500, TRUE, 1), ('Bande A07', 120, 500, TRUE, 1), ('Bande A08', 120, 500, TRUE, 1), ('Bande A09', 120, 500, TRUE, 1), ('Bande A10', 120, 500, TRUE, 1),
