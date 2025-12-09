@@ -13,10 +13,10 @@ INSERT INTO role (role_name)
 -- ===========================
 -- TABLE user_
 -- ===========================
-INSERT INTO "user_" (user_first_name, user_last_name, email, birth_day, hpassword, phone, path_photo, user_active, id_role)
+INSERT INTO "user_" (user_first_name, user_last_name, birth_date, email, hpassword, phone, path_photo, user_active, id_role)
 VALUES
-('John', 'Doe', 'john.doe2@example.com', '1990-01-01', '$2b$10$h5kQOXCWO5noJXk7sLvKiu5bzDKMnHbAFk7El6nEinVpCkwPPFO7a', '0123456789', NULL, TRUE, 1),
-('Jane', 'Smith', 'jane.smith2@example.com', '1992-02-02',  '$2b$10$h5kQOXCWO5noJXk7sLvKiu5bzDKMnHbAFk7El6nEinVpCkwPPFO7a', '0987654321', NULL, TRUE, 2);
+('John', 'Doe', '1990-01-01', 'john.doe2@example.com',  '$2b$10$h5kQOXCWO5noJXk7sLvKiu5bzDKMnHbAFk7El6nEinVpCkwPPFO7a', '0123456789', NULL, TRUE, 1),
+('Jane', 'Smith', '1992-02-02', 'jane.smith2@example.com',   '$2b$10$h5kQOXCWO5noJXk7sLvKiu5bzDKMnHbAFk7El6nEinVpCkwPPFO7a', '0987654321', NULL, TRUE, 2);
 
 -- ===========================
 -- TABLE family_importance
