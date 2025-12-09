@@ -1,14 +1,6 @@
 import { User_ } from 'src/entities/user_.entity';
 import { Section } from './section.entity';
-import {
-  Column,
-  Entity,
-  ManyToMany,
-  ManyToOne,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
-
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Harvest {
@@ -25,9 +17,8 @@ export class Harvest {
   quantity_unit: string;
 
   @ManyToOne(() => User_, (user_) => user_.exploitations)
-  user_ : User_;
+  user_: User_;
 
   @ManyToOne(() => Section, (section) => section.harvets)
-  section : Section;
-
+  section: Section;
 }

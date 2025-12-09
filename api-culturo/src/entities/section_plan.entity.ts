@@ -3,7 +3,8 @@ import { Section } from './section.entity';
 import {
   Column,
   Entity,
-  ManyToMany,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -25,6 +26,7 @@ export class SectionPlan {
   @OneToMany(() => Section, (section) => section.sectionPlan)
   sections: Section[];
 
-  @ManyToMany(() => Board, (board) => board.sectionPlans)
-  board: Board;
+  @ManyToOne(() => Board, (board) => board.sectionPlans)
+  @JoinColumn({ name: 'id_board' }) // Assurez-vous d'avoir une colonne 'id_board' dans votre table section_plan
+  board: Board; // OK
 }

@@ -7,6 +7,7 @@ import { UsersModule } from './users/users.module';
 import { LegumeModule } from './vegetables/legume.module';
 import { ExploitationModule } from './exploitations/exploitation.module';
 import { AppDataSourceOptions } from './data-source';
+import { RotationModule } from './rotations/rotation/rotation.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { AppDataSourceOptions } from './data-source';
     UsersModule,
     LegumeModule,
     ExploitationModule,
+    RotationModule,
   ],
 })
 export class AppModule {}

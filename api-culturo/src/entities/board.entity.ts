@@ -3,7 +3,6 @@ import {
   Column,
   Entity,
   JoinColumn,
-  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -32,11 +31,17 @@ export class Board {
   @Column()
   id_sole: number;
 
+  // @ManyToOne(() => Sole, (sole) => sole.boards)
+  // @JoinColumn({ name: 'id_sole' })
+  // sole: Sole;
+
   @ManyToOne(() => Sole, (sole) => sole.boards)
   @JoinColumn({ name: 'id_sole' })
-  sole: Sole;
+  sole: Sole; // ⬅️ Nom de la propriété !
 
-  @ManyToMany(() => SectionPlan, (sectionPlan) => sectionPlan.board)
+  // 🚨 CORRECTION : Relation One-to-Many vers SectionPlan
+  // Un Board est lié à PLUSIEURS SectionPlans
+  @OneToMany(() => SectionPlan, (sectionPlan) => sectionPlan.board)
   sectionPlans: SectionPlan[];
 
   @OneToMany(() => Amended, (amended) => amended.board)
