@@ -27,6 +27,14 @@ export class FamilyService {
 
   /**
    *
+   * @returns
+   */
+  public async getAllImportance() {
+    return await this.importanceRepository.find();
+  }
+
+  /**
+   *
    * @param id
    * @returns
    */

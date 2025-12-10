@@ -28,6 +28,16 @@ export class FamilyController {
 
   /**
    *
+   * @returns
+   */
+  @Get('importances')
+  @ApiOperation({ summary: 'Get all Importances' })
+  public async getAllImportance() {
+    return this.familyService.getAllImportance();
+  }
+
+  /**
+   *
    * @param id
    * @returns
    */
