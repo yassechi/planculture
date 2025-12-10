@@ -9,6 +9,11 @@ export class CreateVegetableDTO {
 
   @IsString()
   @IsNotEmpty()
+  @ApiProperty({ description: 'The name of variety ' })
+  variety_name: string;
+
+  @IsString()
+  @IsNotEmpty()
   @ApiProperty({ description: 'The planting season' })
   planting_season: string;
 

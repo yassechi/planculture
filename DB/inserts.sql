@@ -52,24 +52,24 @@ INSERT INTO treatment (treatment_name) VALUES
 ('Pyrethre naturel');
 
 
--- 2. TABLES D'UTILISATEURS ET D'EXPLOITATION (ORDRE CORRIGE)
--- Hachage de '123456' (salt=10) : $2a$10$l41oT29.Yy5l5R3d.C5m9uD.R4Q3C9E2H1V5P9L1B0G8F7J6K0I
-INSERT INTO "user_" (user_first_name, user_last_name, birth_date, email, hpassword, phone, path_photo, user_active, id_role, "harvestIdHarvest") VALUES
+INSERT INTO "user_" (
+  user_first_name, user_last_name, birth_date, email, hpassword, phone, path_photo, user_active, id_role, "harvestIdHarvest"
+) VALUES
 ('Sylvie', 'Dubois', '1980-01-01', 'sylvie@culturo.be',
-'$2a$10$l41oT29.Yy5l5R3d.C5m9uD.R4Q3C9E2H1V5P9L1B0G8F7J6K0I',
-'0471111111', NULL, TRUE, 1, NULL),
+ '$2a$10$l41oT29.Yy5l5R3d.C5m9uD.R4Q3C9E2H1V5P9L1B0G8F7J6K0I',
+ '0471111111', NULL, TRUE, 1, NULL),
 ('Marc', 'Lefevre', '1985-05-15', 'marc@culturo.be',
-'$2a$10$l41oT29.Yy5l5R3d.C5m9uD.R4Q3C9E2H1V5P9L1B0G8F7J6K0I',
-'0472222222', NULL, TRUE, 2, NULL),
+ '$2a$10$l41oT29.Yy5l5R3d.C5m9uD.R4Q3C9E2H1V5P9L1B0G8F7J6K0I',
+ '0472222222', NULL, TRUE, 2, NULL),
 ('Antoine', 'Ferma', '1995-01-01', 'antoine@culturo.be',
-'$2a$10$l41oT29.Yy5l5R3d.C5m9uD.R4Q3C9E2H1V5P9L1B0G8F7J6K0I',
-'0473333333', NULL, TRUE, 2, NULL),
+ '$2a$10$l41oT29.Yy5l5R3d.C5m9uD.R4Q3C9E2H1V5P9L1B0G8F7J6K0I',
+ '0473333333', NULL, TRUE, 2, NULL),
 ('Emilie', 'Terres', '1996-02-02', 'emilie@culturo.be',
-'$2a$10$l41oT29.Yy5l5R3d.C5m9uD.R4Q3C9E2H1V5P9L1B0G8F7J6K0I',
-'0474444444', NULL, TRUE, 2, NULL),
+ '$2a$10$l41oT29.Yy5l5R3d.C5m9uD.R4Q3C9E2H1V5P9L1B0G8F7J6K0I',
+ '0474444444', NULL, TRUE, 2, NULL),
 ('Lucas', 'Verger', '1997-03-03', 'lucas@culturo.be',
-'$2a$10$l41oT29.Yy5l5R3d.C5m9uD.R4Q3C9E2H1V5P9L1B0G8F7J6K0I',
-'0475555555', NULL, TRUE, 2, NULL);
+ '$2a$10$l41oT29.Yy5l5R3d.C5m9uD.R4Q3C9E2H1V5P9L1B0G8F7J6K0I',
+ '0475555555', NULL, TRUE, 2, NULL);
 
 INSERT INTO exploitation (exploitation_name, exploitation_locality, exploitation_active, "user_idUser") VALUES
 ('Domaine du Chene', 'Bruxelles', 'Active', 1),
