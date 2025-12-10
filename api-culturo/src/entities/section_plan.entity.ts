@@ -21,7 +21,7 @@ export class SectionPlan {
   number_of_section: number;
 
   @Column()
-  section_plan_active: number;
+  section_plan_active: boolean;
 
   @OneToMany(() => Section, (section) => section.sectionPlan)
   sections: Section[];

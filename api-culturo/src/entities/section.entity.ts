@@ -2,6 +2,7 @@ import { SectionPlan } from './section_plan.entity';
 import {
   Column,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -34,6 +35,7 @@ export class Section {
   harvets: Harvest[];
 
   @ManyToOne(() => Vegetable, (vegetable) => vegetable.sections)
+  @JoinColumn({ name: 'id_vegetable' })
   vegetable: Vegetable;
 
   @OneToMany(() => Watering, (watering) => watering.section)
