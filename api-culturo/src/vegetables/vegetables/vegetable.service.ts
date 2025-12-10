@@ -24,7 +24,13 @@ export class VegetableService {
    */
   async getAllVegetables() {
     return this.vegetableRepository.find({
-      relations: ['family', 'prices', 'sections', 'orderDetails'],
+      relations: [
+        'family',
+        'family.family_importance',
+        'prices',
+        'sections',
+        'orderDetails',
+      ],
     });
   }
 
@@ -36,7 +42,13 @@ export class VegetableService {
   async getVegetableById(id: number) {
     return this.vegetableRepository.findOne({
       where: { id_vegetable: id },
-      relations: ['family', 'prices', 'sections', 'orderDetails'],
+      relations: [
+        'family',
+        'family.family_importance',
+        'prices',
+        'sections',
+        'orderDetails',
+      ],
     });
   }
 
