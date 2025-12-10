@@ -1,10 +1,29 @@
-import { BoardPlanDto, RawCulturePlanResult } from '../dtos/boardPlan.dto';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BoardPlanDto } from '../dtos/boardPlan.dto';
+import {
+  Injectable,
+  NotFoundException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { Vegetable } from 'src/entities/vegetable.entity';
 import { Section } from 'src/entities/section.entity';
+import { SectionPlan } from 'src/entities/section_plan.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { LessThanOrEqual } from 'typeorm';
 import { Repository } from 'typeorm';
+
+interface RawCulturePlanResult {
+  board_id_board: number;
+  board_board_name: string;
+  section_section_number: number;
+  vegetable_vegetable_name: string;
+  vegetable_variety_name: string | null;
+  section_start_date: Date;
+  section_end_date: Date;
+}
+
+// --- Type Guard Utile ---
+function isError(error: unknown): error is Error {
+  return error instanceof Error;
+}
 
 @Injectable()
 export class RotationService {
@@ -13,15 +32,12 @@ export class RotationService {
     private sectionRepository: Repository<Section>,
     @InjectRepository(Vegetable)
     private readonly vegetableRepository: Repository<Vegetable>,
+    @InjectRepository(SectionPlan)
+    private sectionPlanRepository: Repository<SectionPlan>,
   ) {}
 
   /**
-   *
-   * @param soleId
-   * @param year
-   * @param month
-   * @param periodMonths
-   * @returns
+   * Récupère le plan de culture pour une sole et une période données.
    */
   async getCulturePlan(
     soleId: number,
@@ -40,63 +56,41 @@ export class RotationService {
       endDate = new Date(year, 11, 31);
     }
 
-    const query = this.sectionRepository.createQueryBuilder('section');
-
-    query
-      // Jointure 1: Section -> Vegetable (ManyToOne)
-      .leftJoinAndSelect('section.vegetable', 'vegetable')
-
-      // Jointure 2: Section -> SectionPlan (ManyToOne)
+    const results: RawCulturePlanResult[] = await this.sectionRepository
+      .createQueryBuilder('section')
+      .leftJoin('section.vegetable', 'vegetable')
       .leftJoin('section.sectionPlan', 'sectionPlan')
-
-      // Jointure 3: SectionPlan -> Board (ManyToOne - le nouveau chemin simple !)
       .leftJoin('sectionPlan.board', 'board')
-
-      // Jointure 4: Board -> Sole (ManyToOne)
-      // Note : La Sole est maintenant accessible via Board
       .leftJoin('board.sole', 'sole')
-
-      // Filtre sur l'ID de Sole
       .where('sole.id_sole = :soleId', { soleId })
-
-      // Filtres de date
       .andWhere('section.start_date <= :endDate', { endDate })
       .andWhere('section.end_date >= :startDate', { startDate })
-
-      // Sélection des colonnes
       .select([
-        'board.board_name',
         'board.id_board',
+        'board.board_name',
+        'section.section_number',
         'vegetable.vegetable_name',
         'vegetable.variety_name',
         'section.start_date',
         'section.end_date',
       ])
-      .distinct(true);
+      .orderBy('board.board_name', 'ASC')
+      .addOrderBy('section.section_number', 'ASC')
+      .getRawMany<RawCulturePlanResult>();
 
-    const sqlQuery = query.getQuery();
-    console.log('SQL QUERY:', sqlQuery);
-
-    const results: RawCulturePlanResult[] =
-      await query.getRawMany<RawCulturePlanResult>();
-
-    // Mapping des résultats
     return results.map((r) => ({
-      boardName: r.board_board_name,
       boardId: r.board_id_board,
+      boardName: r.board_board_name,
+      sectionNumber: r.section_section_number,
       vegetableName: r.vegetable_vegetable_name,
       varietyName: r.vegetable_variety_name,
       startDate: r.section_start_date,
       endDate: r.section_end_date,
     }));
   }
-
   /**
-   *
-   * @param boardId
-   * @param vegetableId
-   * @param bypass
-   * @returns
+   * Vérifie la possibilité de planter un légume sur une planche donnée.
+   * Vérifie les règles de rotation (5 ans) et de cohabitation.
    */
   async canPlantVegetable(
     boardId: number,
@@ -108,207 +102,267 @@ export class RotationService {
       where: { id_vegetable: vegetableId },
       relations: ['family', 'family.family_importance'],
     });
-    if (!vegetable) throw new NotFoundException('Vegetable not found');
+
+    if (!vegetable) {
+      throw new NotFoundException(`Vegetable with id ${vegetableId} not found`);
+    }
 
     const family = vegetable.family;
-    const isPrimary = family.family_importance?.importance_name === 'primaire';
 
-    // CHECK 1 - HISTORIQUE DE 5 ANS (Rotation des cultures pour les familles primaires)
-    if (isPrimary) {
-      const fiveYearsAgo = new Date();
-      fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear() - 5);
+    if (!family || !family.family_importance) {
+      throw new NotFoundException(
+        'Vegetable family or importance not configured',
+      );
+    }
 
-      // On cherche toutes les sections de CETTE planche plantées depuis 5 ans
-      const sectionsInLast5Years = await this.sectionRepository.find({
-        where: {
-          // Utilise la relation pour filtrer par la planche cible
-          sectionPlan: {
-            board: { id_board: boardId },
-          },
-          // Récupère les sections plantées APRÈS la date limite de 5 ans
-          start_date: LessThanOrEqual(fiveYearsAgo), // Ceci semble être l'inverse de ce qui est souhaité.
-          // Si l'objectif est de vérifier l'absence d'une famille dans les 5 dernières années,
-          // nous devons chercher les sections plantées DEPUIS (MoreThan) fiveYearsAgo.
-        },
-        relations: ['vegetable', 'vegetable.family'],
-      });
+    const isPrimary = family.family_importance.importance_name === 'primaire';
 
-      // Calculer les familles plantées sur cette planche durant les 5 dernières années
-      const familiesInLast5Years = sectionsInLast5Years
-        .filter((s) => s.start_date && s.start_date >= fiveYearsAgo) // Filtre correct côté code si besoin
-        .map((s) => s.vegetable.family.id_family);
+    // Si ce n'est pas une famille primaire, pas de règles strictes
+    if (!isPrimary) {
+      return { status: 'OK' };
+    }
 
-      const alreadyPlanted = familiesInLast5Years.includes(family.id_family);
-      console.log('deja planté dans les 5 dernière année? : ', alreadyPlanted);
+    // CHECK 1 & 2 (Rotation 5 ans et Cohabitation Active)
+    const fiveYearsAgo = new Date();
+    fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear() - 5);
 
-      if (alreadyPlanted) {
-        // Règle de rotation violée : Famille primaire déjà plantée dans les 5 dernières années
-        if (!bypass) {
-          return {
-            status: 'WARNING',
-            reason:
-              'Cette famille primaire a déjà été plantée sur cette planche dans les 5 dernières années (Rotation 5 ans).',
-            neededBypass: true,
-          };
-        }
+    // Récupération des sections via QueryBuilder pour plus de contrôle
+    const sectionsToCheck = await this.sectionRepository
+      .createQueryBuilder('section')
+      .leftJoinAndSelect('section.vegetable', 'vegetable')
+      .leftJoinAndSelect('vegetable.family', 'family')
+      .leftJoinAndSelect('family.family_importance', 'family_importance')
+      .leftJoin('section.sectionPlan', 'sectionPlan')
+      .leftJoin('sectionPlan.board', 'board')
+      .where('board.id_board = :boardId', { boardId })
+      .andWhere(
+        '(section.section_active = :active OR section.end_date >= :fiveYearsAgo)',
+        { active: true, fiveYearsAgo },
+      )
+      .getMany();
+
+    let alreadyPlantedIn5Years = false;
+    let hasOtherActivePrimary = false;
+
+    for (const section of sectionsToCheck) {
+      if (!section.vegetable?.family) continue;
+
+      const sectionFamilyId = section.vegetable.family.id_family;
+      const sectionIsPrimary =
+        section.vegetable.family.family_importance?.importance_name ===
+        'primaire';
+
+      // 1. Vérification Rotation (5 ans)
+      if (
+        section.end_date >= fiveYearsAgo &&
+        sectionFamilyId === family.id_family
+      ) {
+        alreadyPlantedIn5Years = true;
+      }
+
+      // 2. Vérification Cohabitation (Actuellement active)
+      if (
+        section.section_active &&
+        sectionIsPrimary &&
+        sectionFamilyId !== family.id_family
+      ) {
+        hasOtherActivePrimary = true;
       }
     }
 
-    // CHECK 2 - CONFLIT AVEC D'AUTRES FAMILLES PRIMAIRES ACTIVES SUR LA PLANCHE
-    if (isPrimary) {
-      // On cherche toutes les sections ACTIVES (section_active = TRUE) sur cette planche
-      const activeSectionsOnBoard = await this.sectionRepository.find({
-        where: {
-          sectionPlan: {
-            board: { id_board: boardId },
-          },
-          section_active: true, // Assurez-vous que seule la section active est vérifiée
-        },
-        relations: [
-          'vegetable',
-          'vegetable.family',
-          'vegetable.family.family_importance',
-        ],
-      });
-
-      const activePrimaryFamilies = activeSectionsOnBoard
-        .filter(
-          (s) =>
-            // CORRECTION: Utilisation de 'primaire'
-            s.vegetable.family.family_importance.importance_name === 'primaire',
-        )
-        .map((s) => s.vegetable.family.id_family);
-
-      const hasOtherPrimary =
-        activePrimaryFamilies.length > 0 &&
-        !activePrimaryFamilies.includes(family.id_family);
-
-      if (hasOtherPrimary) {
-        // Règle de cohabitation violée : Une autre famille primaire est déjà active
-        if (!bypass) {
-          return {
-            status: 'WARNING',
-            reason:
-              'Une autre famille primaire est déjà activement plantée sur cette planche (Cohabitation).',
-            neededBypass: true,
-          };
-        }
-      }
+    // --- Application des Règles ---
+    if (alreadyPlantedIn5Years && !bypass) {
+      return {
+        status: 'WARNING',
+        reason:
+          'Cette famille primaire a déjà été plantée sur cette planche dans les 5 dernières années (Rotation 5 ans).',
+        neededBypass: true,
+      };
     }
 
-    // Si toutes les vérifications passent (ou si ce n'est pas une famille primaire)
+    if (hasOtherActivePrimary && !bypass) {
+      return {
+        status: 'WARNING',
+        reason:
+          'Une autre famille primaire est déjà activement plantée sur cette planche (Cohabitation).',
+        neededBypass: true,
+      };
+    }
+
+    // Tout est ok ou bypassé
     return { status: 'OK' };
   }
 
   /**
+   * Recherche TOUS les emplacements plantables pour un légume donné sur une période.
    *
-   * @param vegetableId
-   * @param startDate
-   * @param endDate
-   * @returns
+   * Logique HYBRIDE :
+   * - BOARD-LEVEL : Cohabitation de familles primaires et rotation 5 ans bloquent TOUTE la board
+   * - SECTION-LEVEL : Occupation physique bloque SEULEMENT cette section
+   *
+   * @param vegetableId - ID du légume à planter
+   * @param startDate - Date de début de plantation
+   * @param endDate - Date de fin de plantation
    */
   async findPlantableSections(
     vegetableId: number,
     startDate: Date,
     endDate: Date,
-  ) {
-    // 1. Récupérer le légume et sa famille
-    const vegetable = await this.vegetableRepository.findOne({
-      where: { id_vegetable: vegetableId },
-      relations: ['family', 'family.family_importance'],
-    });
-    if (!vegetable) throw new NotFoundException('Vegetable not found');
+  ): Promise<any[]> {
+    try {
+      // 1. Récupérer le légume avec ses relations
+      const targetVegetable = await this.vegetableRepository.findOne({
+        where: { id_vegetable: vegetableId },
+        relations: ['family', 'family.family_importance'],
+      });
 
-    const family = vegetable.family;
-    // CORRECTION: Utilisation de 'primaire'
-    const isPrimary = family.family_importance?.importance_name === 'primaire';
-
-    // 2. Récupérer TOUTES les sections (la jointure ci-dessous est plus efficace si l'historique est petit)
-    // Nous devons charger toutes les sections du domaine de l'utilisateur pour les filtres.
-    const allSections = await this.sectionRepository.find({
-      relations: [
-        'sectionPlan',
-        'sectionPlan.board',
-        'vegetable',
-        'vegetable.family',
-      ],
-    });
-
-    const fiveYearsAgo = new Date();
-    fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear() - 5);
-
-    // Dictionnaire pour stocker les familles plantées par planche pour la règle des 5 ans
-    const boardHistory = new Map<number, number[]>();
-
-    // Pré-calcul de l'historique pour l'efficacité
-    allSections.forEach((section) => {
-      const boardId = section.sectionPlan?.board?.id_board;
-      if (!boardId) return;
-
-      if (!boardHistory.has(boardId)) {
-        boardHistory.set(boardId, []);
+      if (!targetVegetable?.family?.family_importance) {
+        throw new NotFoundException(
+          `Légume ${vegetableId} non trouvé ou configuration incomplète.`,
+        );
       }
 
-      if (
-        section.start_date &&
-        section.start_date >= fiveYearsAgo &&
-        section.vegetable?.family?.id_family
-      ) {
-        boardHistory.get(boardId)?.push(section.vegetable.family.id_family);
+      const targetFamilyId = targetVegetable.family.id_family;
+      const isTargetPrimary =
+        targetVegetable.family.family_importance.importance_name === 'primaire';
+
+      // 2. Date limite pour la rotation (5 ans avant)
+      const fiveYearsAgo = new Date(startDate);
+      fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear() - 5);
+
+      // 3. Récupérer TOUS les SectionPlan actifs (avec leur historique de sections)
+      const allSectionPlans = await this.sectionPlanRepository
+        .createQueryBuilder('sectionPlan')
+        .leftJoinAndSelect('sectionPlan.board', 'board')
+        .leftJoinAndSelect('sectionPlan.sections', 'sections')
+        .leftJoinAndSelect('sections.vegetable', 'vegetable')
+        .leftJoinAndSelect('vegetable.family', 'family')
+        .leftJoinAndSelect('family.family_importance', 'family_importance')
+        .where('sectionPlan.section_plan_active = :active', { active: true })
+        .getMany();
+
+      // 4. Pour chaque SectionPlan, vérifier la disponibilité
+      const plantableLocations: any[] = [];
+
+      for (const sectionPlan of allSectionPlans) {
+        // ========================================
+        // ÉTAPE 1 : Vérifications AU NIVEAU BOARD
+        // (Si une règle échoue, TOUTE la board est bloquée)
+        // ========================================
+
+        let isBoardAccessible = true;
+
+        for (const section of sectionPlan.sections) {
+          // Ignorer les sections sans légume
+          if (!section.vegetable) {
+            continue;
+          }
+
+          // RÈGLE BOARD 1 : Cohabitation de familles primaires actives
+          // Si une famille primaire (différente de la cible) est actuellement active
+          // → TOUTE la board est inaccessible
+          if (section.section_active && section.vegetable.family) {
+            const activeFamilyId = section.vegetable.family.id_family;
+            const isActivePrimary =
+              section.vegetable.family.family_importance?.importance_name ===
+              'primaire';
+
+            if (isActivePrimary && activeFamilyId !== targetFamilyId) {
+              isBoardAccessible = false;
+              break;
+            }
+          }
+
+          // RÈGLE BOARD 2 : Rotation 5 ans (si légume cible est primaire)
+          // Si la même famille primaire a été plantée dans les 5 dernières années
+          // → TOUTE la board est inaccessible
+          if (isTargetPrimary && section.vegetable.family) {
+            const pastFamilyId = section.vegetable.family.id_family;
+            const isPastPrimary =
+              section.vegetable.family.family_importance?.importance_name ===
+              'primaire';
+
+            if (
+              isPastPrimary &&
+              pastFamilyId === targetFamilyId &&
+              section.end_date >= fiveYearsAgo
+            ) {
+              isBoardAccessible = false;
+              break;
+            }
+          }
+        }
+
+        // Si la board n'est pas accessible, passer à la suivante
+        if (!isBoardAccessible) {
+          continue;
+        }
+
+        // ========================================
+        // ÉTAPE 2 : Vérifications AU NIVEAU SECTION
+        // (La board est accessible, vérifier chaque section individuellement)
+        // ========================================
+
+        for (
+          let sectionNumber = 1;
+          sectionNumber <= sectionPlan.number_of_section;
+          sectionNumber++
+        ) {
+          // Récupérer l'historique de cette section spécifique
+          const sectionsAtLocation = sectionPlan.sections.filter(
+            (s) => s.section_number === sectionNumber,
+          );
+
+          let isSectionPlantable = true;
+
+          // Vérifier l'occupation physique de CETTE section
+          for (const section of sectionsAtLocation) {
+            // Ignorer les sections sans légume
+            if (!section.vegetable) {
+              continue;
+            }
+
+            // RÈGLE SECTION : Occupation physique
+            // Si la section est actuellement active OU si les dates chevauchent
+            // → SEULEMENT cette section est bloquée (pas toute la board)
+            const isOccupiedDuringPeriod =
+              section.section_active ||
+              (section.start_date <= endDate && section.end_date >= startDate);
+
+            if (isOccupiedDuringPeriod) {
+              isSectionPlantable = false;
+              break;
+            }
+          }
+
+          // Si cette section est plantable, l'ajouter aux résultats
+          if (isSectionPlantable) {
+            plantableLocations.push({
+              sectionPlanId: sectionPlan.id_section_plan,
+              boardId: sectionPlan.board.id_board,
+              boardName: sectionPlan.board.board_name,
+              sectionNumber: sectionNumber,
+              totalSections: sectionPlan.number_of_section,
+              lastPlantedVegetable:
+                sectionsAtLocation.length > 0
+                  ? sectionsAtLocation[sectionsAtLocation.length - 1].vegetable
+                      ?.vegetable_name
+                  : null,
+              neverPlanted: sectionsAtLocation.length === 0,
+            });
+          }
+        }
       }
-    });
 
-    // 3. Filtrer les sections valides
-    const plantableSections = allSections.filter((section) => {
-      const boardId = section.sectionPlan?.board?.id_board;
-      if (!boardId) return false;
+      return plantableLocations;
+    } catch (e) {
+      const errorMessage = isError(e)
+        ? e.message
+        : 'Erreur inconnue lors de la recherche des sections plantables.';
 
-      // A. Vérifier conflit de dates
-      // Si la section est ACTIVE OU si elle chevauche la période de plantation désirée
-      const overlap =
-        section.section_active ||
-        (section.start_date &&
-          section.end_date &&
-          startDate <= section.end_date &&
-          endDate >= section.start_date);
-
-      if (overlap) return false; // section occupée → on exclut
-
-      // B. Vérifier l'historique 5 ans (si famille primaire)
-      if (isPrimary) {
-        const familiesInLast5Years = boardHistory.get(boardId) || [];
-
-        // Si la famille cible a déjà été plantée dans les 5 dernières années sur cette planche → on exclut
-        if (familiesInLast5Years.includes(family.id_family)) return false;
-      }
-
-      // C. Vérifier la cohabitation (autre famille primaire déjà active)
-      // Note: Ceci peut être ignoré car la vérification de chevauchement (A) couvre
-      // la plupart des cas où la section est ACTIVE et plantée. Cependant,
-      // si la logique de rotation est stricte, cette vérification est nécessaire.
-      const activePrimaryFamiliesOnBoard = allSections
-        .filter(
-          (s) => s.sectionPlan?.board?.id_board === boardId && s.section_active,
-        )
-        .filter(
-          (s) =>
-            s.vegetable?.family?.family_importance?.importance_name ===
-            'primaire',
-        )
-        .map((s) => s.vegetable.family.id_family);
-
-      if (
-        activePrimaryFamiliesOnBoard.length > 0 &&
-        !activePrimaryFamiliesOnBoard.includes(family.id_family)
-      ) {
-        // Une autre famille primaire est déjà active sur cette planche
-        return false;
-      }
-
-      // Si aucune restriction n'est trouvée pour cette section
-      return true;
-    });
-
-    return plantableSections;
+      throw new InternalServerErrorException(
+        `Erreur findPlantableSections: ${errorMessage}`,
+      );
+    }
   }
 }

@@ -38,7 +38,7 @@ export class BoardPlanDto {
     example: 'Marmande',
   })
   @IsString()
-  varietyName: string;
+  varietyName: string | null;
 
   @ApiProperty({
     description: 'Date de début de la culture/plantation.',

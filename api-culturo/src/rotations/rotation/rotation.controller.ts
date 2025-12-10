@@ -1,6 +1,7 @@
 import { PlantingValidationDto } from '../dtos/planting.validation.dto';
 import { CulturePlanQueryDto } from '../dtos/culture.plan.query.dto';
 import { RotationService } from './rotation.service';
+import { Vegetable } from 'src/entities/vegetable.entity';
 import {
   Controller,
   Get,
@@ -21,18 +22,23 @@ import {
   ApiBody,
   ApiResponse,
 } from '@nestjs/swagger';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @ApiTags('Rotations')
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('rotations')
 export class RotationController {
-  constructor(private readonly rotationService: RotationService) {}
+  constructor(
+    private readonly rotationService: RotationService,
+    // 💡 CORRECTION : Injection directe du repository (pas besoin de VegetableService)
+    @InjectRepository(Vegetable)
+    private readonly vegetableRepository: Repository<Vegetable>,
+  ) {}
 
   /**
    * Obtenir le Plan de Culture par Sole
-   * @param soleId
-   * @param query
-   * @returns
+   * GET /rotations/plan/:soleId?year=2025&month=3&periodMonths=6
    */
   @ApiOperation({
     summary:
@@ -42,29 +48,28 @@ export class RotationController {
     name: 'soleId',
     type: Number,
     description: "L'ID unique de la Sole (ex: 1 pour SOLE Nord).",
+    example: 1,
   })
   @ApiQuery({
     name: 'year',
     type: Number,
+    description: "L'année du plan de culture",
+    example: 2025,
     required: true,
-    description: "L'année du plan de culture (ex: 2025).",
   })
   @ApiQuery({
     name: 'month',
     type: Number,
+    description: 'Le mois de départ (1-12, optionnel)',
+    example: 3,
     required: false,
-    description: 'Le mois de départ (1=Janvier, 12=Décembre).',
   })
   @ApiQuery({
     name: 'periodMonths',
     type: Number,
+    description: 'Durée en mois (optionnel, défaut: 12)',
+    example: 6,
     required: false,
-    description:
-      'La durée en mois à couvrir à partir du mois de départ (par défaut 12).',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Plan de culture réussi.',
   })
   @Get('plan/:soleId')
   async getCulturePlan(
@@ -83,8 +88,7 @@ export class RotationController {
 
   /**
    * Vérifier la Faisabilité de la Plantation
-   * @param body
-   * @returns
+   * POST /rotations/can
    */
   @ApiOperation({
     summary:
@@ -92,11 +96,16 @@ export class RotationController {
   })
   @ApiBody({
     type: PlantingValidationDto,
-    description: 'ID de la planche, du légume et statut du bypass.',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Vérification réussie.',
+    examples: {
+      example1: {
+        summary: 'Vérification simple',
+        value: {
+          boardId: 1,
+          vegetableId: 21,
+          bypass: false,
+        },
+      },
+    },
   })
   @Post('can')
   async canPlantVegetable(@Body() body: PlantingValidationDto) {
@@ -108,64 +117,98 @@ export class RotationController {
       bypass,
     );
 
-    if (result.status === 'WARNING') {
-      return result;
-    }
-
     return result;
   }
 
   /**
    * Trouver les Sections Plantables
-   * @param vegetableId
-   * @param startDateString
-   * @param endDateString
-   * @returns
+   * GET /rotations/plantable-sections?vegetableId=21&startDate=2025-03-01&endDate=2025-07-31
    */
   @ApiOperation({
     summary:
-      "Trouve les sections disponibles pour la plantation d'un légume donné sur une plage de dates (tenant compte de l'historique et des chevauchements).",
+      'Trouve toutes les sections plantables pour un légume donné sur une période.',
+    description:
+      'Retourne uniquement les sections qui sont disponibles (non occupées) et qui respectent les règles de rotation.',
   })
-  @ApiParam({
+  @ApiQuery({
     name: 'vegetableId',
     type: Number,
-    description: "L'ID unique du légume à planter.",
+    description: 'ID du légume à planter',
+    example: 21,
+    required: true,
   })
   @ApiQuery({
     name: 'startDate',
     type: String,
-    description: 'Date de début de plantation souhaitée (format YYYY-MM-DD).',
+    description: 'Date de début de la plantation (YYYY-MM-DD)',
+    example: '2025-03-01',
+    required: true,
   })
   @ApiQuery({
     name: 'endDate',
     type: String,
-    description: 'Date de fin de récolte souhaitée (format YYYY-MM-DD).',
+    description: 'Date de fin de la plantation (YYYY-MM-DD)',
+    example: '2025-07-31',
+    required: true,
   })
   @ApiResponse({
     status: 200,
-    description: 'Liste des sections plantables réussie.',
+    description: 'Liste des sections disponibles pour la plantation.',
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          sectionPlanId: { type: 'number', example: 1 },
+          boardId: { type: 'number', example: 1 },
+          boardName: { type: 'string', example: 'Bande 101' },
+          sectionNumber: { type: 'number', example: 1 },
+          totalSections: { type: 'number', example: 3 },
+          lastPlantedVegetable: {
+            type: 'string',
+            nullable: true,
+            example: 'Tomate',
+          },
+          neverPlanted: { type: 'boolean', example: false },
+        },
+      },
+    },
   })
-  @ApiResponse({
-    status: 400,
-    description: 'Dates de début ou de fin invalides.',
-  })
-  @Get('plantable-sections/:vegetableId')
+  @Get('plantable-sections')
   async findPlantableSections(
-    @Param('vegetableId', ParseIntPipe) vegetableId: number,
-    @Query('startDate') startDateString: string,
-    @Query('endDate') endDateString: string,
-  ) {
-    const startDate = new Date(startDateString);
-    const endDate = new Date(endDateString);
-
-    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-      throw new BadRequestException('Dates de début ou de fin invalides.');
+    @Query('vegetableId', ParseIntPipe) vegetableId: number,
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+  ): Promise<any[]> {
+    // 1. Vérification des dates
+    if (!startDate || !endDate) {
+      throw new BadRequestException(
+        'Les dates de début (startDate) et de fin (endDate) sont obligatoires.',
+      );
     }
 
-    return this.rotationService.findPlantableSections(
+    const startDateObj = new Date(startDate);
+    const endDateObj = new Date(endDate);
+
+    if (isNaN(startDateObj.getTime()) || isNaN(endDateObj.getTime())) {
+      throw new BadRequestException(
+        'Format de date invalide. Utilisez YYYY-MM-DD.',
+      );
+    }
+
+    if (startDateObj > endDateObj) {
+      throw new BadRequestException(
+        'La date de début doit être antérieure à la date de fin.',
+      );
+    }
+
+    // 2. Appel du service (sans boardId)
+    const plantableSections = await this.rotationService.findPlantableSections(
       vegetableId,
-      startDate,
-      endDate,
+      startDateObj,
+      endDateObj,
     );
+
+    return plantableSections;
   }
 }
