@@ -1,19 +1,19 @@
+import { UpdateUserDTO } from './dtos/update.user.dto';
+import { RegisterDTO } from './dtos/register.user.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User_ } from 'src/entities/user_.entity';
+import { Role } from 'src/entities/role.entity';
+import { JWTPayloadType } from 'src/utils/types';
+import { ConfigService } from '@nestjs/config';
+import { LoginDTO } from './dtos/login.dto';
+import bcrypt from 'node_modules/bcryptjs';
+import { JwtService } from '@nestjs/jwt';
+import { Repository } from 'typeorm';
 import {
   BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Role } from 'src/entities/role.entity';
-import { Repository } from 'typeorm';
-import { RegisterDTO } from './dtos/register.user.dto';
-import bcrypt from 'node_modules/bcryptjs';
-import { LoginDTO } from './dtos/login.dto';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
-import { UpdateUserDTO } from './dtos/update.user.dto';
-import { User_ } from 'src/entities/user_.entity';
-import { JWTPayloadType } from 'src/utils/types';
 
 @Injectable()
 export class UsersService {
@@ -141,30 +141,30 @@ export class UsersService {
   public async register(registerDto: RegisterDTO) {
     const { email, hpassword, id_role } = registerDto;
 
-    // --- Vérification email ---
+    // Vérification email
     const userFromDb = await this.userRepository.findOne({ where: { email } });
     if (userFromDb) throw new BadRequestException('User already exists');
 
-    // --- Vérification rôle ---
+    // Vérification rôle
     const roleFromDb = await this.roleRepository.findOne({
       where: { id_role },
     });
     if (!roleFromDb) throw new BadRequestException('Role not found');
 
-    // --- Hash password ---
+    // Hash password
     const hashedPassword = await bcrypt.hash(hpassword, 10);
 
-    // --- Création user ---
+    // Création user
     const newUser = this.userRepository.create({
       ...registerDto,
       hpassword: hashedPassword,
-      role: roleFromDb, // Relation ManyToOne
-      id_role: roleFromDb.id_role, // IMPORTANT pour remplir la FK
+      role: roleFromDb,
+      id_role: roleFromDb.id_role,
     });
 
     const savedUser = await this.userRepository.save(newUser);
 
-    // --- JWT Payload ---
+    // JWT Payload
     const payload: JWTPayloadType = {
       id: savedUser.id_user,
       email: savedUser.email,

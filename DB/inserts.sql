@@ -189,9 +189,15 @@ INSERT INTO watering (watering_date, "sectionIdSection") VALUES
 ('2025-05-05 08:00:00', 16),
 ('2025-05-10 08:00:00', 16);
 
-INSERT INTO amended (amendment_date, treatment_quantity, treatment_unit, "boardIdBoard", "amendementIdAmendement") VALUES
-('2025-03-01', 200, 'kg', 1, 1), ('2025-03-05', 250, 'kg', 2, 2),
-('2025-03-25', 220, 'kg', 6, 1), ('2025-03-30', 280, 'kg', 7, 2);
+INSERT INTO amended (amendment_date, title, description, id_board, amendement_id) VALUES
+-- Ajout de Compost (ID 1) sur Bande A01 (ID 1)
+('2025-03-01', 'Compostage de printemps', 'Application de compost bien mûr après l hiver.', 1, 1), 
+-- Ajout de Fumier de cheval (ID 2) sur Bande A02 (ID 2)
+('2025-03-05', 'Fumure d appoint', 'Fumier décomposé avant la plantation des Solanacées.', 2, 2),
+-- Ajout de Compost (ID 1) sur Bande A06 (ID 6)
+('2025-03-25', 'Nouveau lot de Compost', 'Ajout sur une nouvelle section de la SOLE Nord.', 6, 1), 
+-- Ajout de Fumier de cheval (ID 2) sur Bande A07 (ID 7)
+('2025-03-30', 'Preparation planches tardives', 'Préparation pour les cultures d été.', 7, 2);
 
 INSERT INTO treated (treatment_date, treatment_quantity, treatment_unit, "boardIdBoard", "treatmentIdTreatment") VALUES
 ('2025-05-10', 5, 'L', 21, 1), ('2025-05-13', 6, 'L', 22, 2);

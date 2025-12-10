@@ -1,23 +1,23 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Family } from 'src/entities/family.entity';
 import { Family_importance } from 'src/entities/family_importance.entity';
-import { Repository } from 'typeorm';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateFamilyDTO } from './dtos/create.family.dto';
 import { UpdateFamilyDTO } from './dtos/update.family.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Family } from 'src/entities/family.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class FamilyService {
   constructor(
     @InjectRepository(Family)
     private readonly familyRepository: Repository<Family>,
-
     @InjectRepository(Family_importance)
     private readonly importanceRepository: Repository<Family_importance>,
   ) {}
 
   /**
-   * Retourne toutes les familles
+   *
+   * @returns
    */
   public async getAllFamilies() {
     return await this.familyRepository.find({
@@ -26,7 +26,9 @@ export class FamilyService {
   }
 
   /**
-   * Retourne une famille par ID
+   *
+   * @param id
+   * @returns
    */
   async getFamilyById(id: number): Promise<Family | null> {
     return this.familyRepository.findOne({
@@ -36,7 +38,9 @@ export class FamilyService {
   }
 
   /**
-   * Création d’une famille
+   *
+   * @param payload
+   * @returns
    */
   async createFamily(payload: CreateFamilyDTO): Promise<Family> {
     const { family_name, id_family_importance } = payload;
@@ -60,7 +64,9 @@ export class FamilyService {
   }
 
   /**
-   * Mise à jour d’une famille
+   *
+   * @param payload
+   * @returns
    */
   async updateFamily(payload: UpdateFamilyDTO): Promise<Family> {
     const { id_family, id_family_importance, ...rest } = payload;
@@ -93,7 +99,9 @@ export class FamilyService {
   }
 
   /**
-   * Suppression d’une famille
+   *
+   * @param id
+   * @returns
    */
   async delFamily(id: number): Promise<{ msg: string }> {
     const family = await this.familyRepository.findOne({

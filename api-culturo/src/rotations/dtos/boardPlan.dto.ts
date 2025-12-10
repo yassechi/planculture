@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger'; // Importez le décorateur Swagger
 import { IsString, IsNumber, IsDate } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger'; // Importez le décorateur Swagger
 
 // Vous n'avez pas besoin de décorateurs Swagger sur l'interface interne
 export interface RawCulturePlanResult {

@@ -1,3 +1,7 @@
+import { CreateVegetableDTO } from './dtos/create.vegetable.dto';
+import { UpdateVegetableDTO } from './dtos/update.vegetable.dto';
+import { ApiOperation } from '@nestjs/swagger';
+import { VegetableService } from './vegetable.service';
 import {
   Body,
   Controller,
@@ -7,49 +11,62 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
-import { VegetableService } from './vegetable.service';
-
-import { ApiOperation } from '@nestjs/swagger';
-import { CreateVegetableDTO } from './dtos/create.vegetable.dto';
-import { UpdateVegetableDTO } from './dtos/update.vegetable.dto';
 
 @Controller('vegetable')
 export class VegetableController {
   constructor(private readonly vegetableService: VegetableService) {}
 
+  /**
+   *
+   * @returns
+   */
   @Get()
   @ApiOperation({ summary: 'Get all Vegetables' })
   async getAllVegetables() {
     return this.vegetableService.getAllVegetables();
   }
 
+  /**
+   *
+   * @param id
+   * @returns
+   */
   @Get(':id')
   @ApiOperation({ summary: 'Get Vegetable by ID' })
   async getVegetable(@Param('id') id: number) {
     return this.vegetableService.getVegetableById(id);
   }
 
+  /**
+   *
+   * @param payload
+   * @returns
+   */
   @Post()
   @ApiOperation({ summary: 'Create a Vegetable' })
   async createVegetable(@Body() payload: CreateVegetableDTO) {
     return this.vegetableService.createVegetable(payload);
   }
 
+  /**
+   *
+   * @param payload
+   * @returns
+   */
   @Put()
   @ApiOperation({ summary: 'Update a Vegetable' })
   async updateVegetable(@Body() payload: UpdateVegetableDTO) {
     return this.vegetableService.updateVegetable(payload);
   }
 
-  @Delete(':id')
+  /**
+   *
+   * @param id
+   * @returns
+   */
+  @Delete('/search:id')
   @ApiOperation({ summary: 'Delete a Vegetable' })
   async delVegetable(@Param('id') id: number) {
     return this.vegetableService.delVegetable(id);
-  }
-
-  @Get('can/:idBoard/:idVegetable')
-  @ApiOperation({ summary: 'Get can plante this vegetable' })
-  async canPlantVegetable(@Param('idBoard') idBoard:number, @Param('idVegetable') idVegetable:number){
-    return this.vegetableService.canPlantVegetable(idBoard, idVegetable);
   }
 }

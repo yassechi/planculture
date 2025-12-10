@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsBoolean,
   IsDate,
@@ -8,7 +9,6 @@ import {
   Length,
   MaxLength,
 } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
 
 export class RegisterDTO {
   @IsString()
@@ -58,30 +58,3 @@ export class RegisterDTO {
   @ApiProperty({ description: "The path to the user's photo" })
   path_photo: string;
 }
-
-// @PrimaryGeneratedColumn()
-//   id_user: number;
-
-//   @Column({ type: 'varchar', length: '100' })
-//   user_first_name: string;
-
-//   @Column({ type: 'varchar', length: '100' })
-//   user_last_name: string;
-
-//   @Column({ type: 'varchar', length: '150', unique: true })
-//   email: string;
-
-//   @Column({ type: 'varchar' })
-//   hpassword: string;
-
-//   @Column({ type: 'varchar' })
-//   phone: string;
-
-//   @Column({ type: 'varchar', nullable: true })
-//   path_photo: string;
-
-//   @Column({ type: 'boolean', default: true })
-//   user_active: boolean;
-
-//   @CreateDateColumn({ type: 'timestamp', default: () => CURRENT_TIMESTAMP })
-//   created_at: Date;

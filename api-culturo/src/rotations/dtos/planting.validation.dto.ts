@@ -1,6 +1,6 @@
 import { IsBoolean, IsInt, IsOptional, IsPositive } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { ApiProperty } from '@nestjs/swagger'; // <-- Import Swagger
 
 export class PlantingValidationDto {
   @ApiProperty({

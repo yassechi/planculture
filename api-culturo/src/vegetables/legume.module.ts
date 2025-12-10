@@ -1,15 +1,15 @@
-import { Module } from '@nestjs/common';
-import { FamilyController } from './families/family.controller';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { JwtModule } from '@nestjs/jwt';
-import { Family } from 'src/entities/family.entity';
-import { Vegetable } from 'src/entities/vegetable.entity';
-import { ConfigService } from '@nestjs/config';
-import { VegetableController } from './vegetables/vegetable.controller';
-import { VegetableService } from './vegetables/vegetable.service';
-import { FamilyService } from './families/family.service';
 import { Family_importance } from 'src/entities/family_importance.entity';
+import { VegetableController } from './vegetables/vegetable.controller';
+import { FamilyController } from './families/family.controller';
+import { VegetableService } from './vegetables/vegetable.service';
+import { Vegetable } from 'src/entities/vegetable.entity';
+import { FamilyService } from './families/family.service';
 import { Section } from 'src/entities/section.entity';
+import { Family } from 'src/entities/family.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigService } from '@nestjs/config';
+import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [

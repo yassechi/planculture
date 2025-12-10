@@ -1,3 +1,6 @@
+import { PlantingValidationDto } from '../dtos/planting.validation.dto';
+import { CulturePlanQueryDto } from '../dtos/culture.plan.query.dto';
+import { RotationService } from './rotation.service';
 import {
   Controller,
   Get,
@@ -17,23 +20,20 @@ import {
   ApiQuery,
   ApiBody,
   ApiResponse,
-} from '@nestjs/swagger'; // <-- Nouveaux imports Swagger
+} from '@nestjs/swagger';
 
-import { RotationService } from './rotation.service';
-import { CulturePlanQueryDto } from '../dtos/culture.plan.query.dto';
-import { PlantingValidationDto } from '../dtos/planting.validation.dto';
-// Importez également les DTOs de réponse si vous les avez, par exemple:
-// import { PlantingResultDto } from '../dtos/planting.result.dto';
-
-@ApiTags('Rotations') // Regroupe tous les endpoints sous la tag "Rotations"
+@ApiTags('Rotations')
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('rotations')
 export class RotationController {
   constructor(private readonly rotationService: RotationService) {}
 
-  // ----------------------------------------------------------------------
-  // MÉTHODE 1 : Obtenir le Plan de Culture par Sole
-  // ----------------------------------------------------------------------
+  /**
+   * Obtenir le Plan de Culture par Sole
+   * @param soleId
+   * @param query
+   * @returns
+   */
   @ApiOperation({
     summary:
       'Obtenir le plan de culture pour une Sole donnée sur une période spécifique.',
@@ -64,7 +64,7 @@ export class RotationController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Plan de culture réussi.' /* type: BoardPlanDto[] */,
+    description: 'Plan de culture réussi.',
   })
   @Get('plan/:soleId')
   async getCulturePlan(
@@ -81,9 +81,11 @@ export class RotationController {
     );
   }
 
-  // ----------------------------------------------------------------------
-  // MÉTHODE 2 : Vérifier la Faisabilité de la Plantation
-  // ----------------------------------------------------------------------
+  /**
+   * Vérifier la Faisabilité de la Plantation
+   * @param body
+   * @returns
+   */
   @ApiOperation({
     summary:
       'Vérifie si un légume peut être planté sur une planche en respectant les règles de rotation de 5 ans et de cohabitation.',
@@ -94,7 +96,7 @@ export class RotationController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Vérification réussie.' /* type: PlantingResultDto */,
+    description: 'Vérification réussie.',
   })
   @Post('can')
   async canPlantVegetable(@Body() body: PlantingValidationDto) {
@@ -113,9 +115,13 @@ export class RotationController {
     return result;
   }
 
-  // ----------------------------------------------------------------------
-  // MÉTHODE 3 (Supplémentaire) : Trouver les Sections Plantables
-  // ----------------------------------------------------------------------
+  /**
+   * Trouver les Sections Plantables
+   * @param vegetableId
+   * @param startDateString
+   * @param endDateString
+   * @returns
+   */
   @ApiOperation({
     summary:
       "Trouve les sections disponibles pour la plantation d'un légume donné sur une plage de dates (tenant compte de l'historique et des chevauchements).",
@@ -137,7 +143,7 @@ export class RotationController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Liste des sections plantables réussie.' /* type: Section[] */,
+    description: 'Liste des sections plantables réussie.',
   })
   @ApiResponse({
     status: 400,

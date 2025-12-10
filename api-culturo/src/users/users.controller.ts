@@ -1,3 +1,11 @@
+import { CurrentUser } from './decorators/current-user.decorator';
+import { UpdateUserDTO } from './dtos/update.user.dto';
+import { RegisterDTO } from './dtos/register.user.dto';
+import type { JWTPayloadType } from 'src/utils/types';
+import { User_ } from 'src/entities/user_.entity';
+import { AuthChard } from './guards/auth.guard';
+import { UsersService } from './users.service';
+import { LoginDTO } from './dtos/login.dto';
 import {
   Body,
   Controller,
@@ -11,28 +19,22 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
-import { UsersService } from './users.service';
-import { RegisterDTO } from './dtos/register.user.dto';
-import { LoginDTO } from './dtos/login.dto';
-import { AuthChard } from './guards/auth.guard';
-import { CurrentUser } from './decorators/current-user.decorator';
-import type { JWTPayloadType } from 'src/utils/types';
 import {
-  ApiQuery,
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiSecurity,
-  ApiBearerAuth,
 } from '@nestjs/swagger';
-import { UpdateUserDTO } from './dtos/update.user.dto';
-import { User_ } from 'src/entities/user_.entity';
 
 @ApiTags('User Group')
 @Controller('users')
 export class UsersController {
   constructor(private userService: UsersService) {}
 
+  /**
+   *
+   * @returns
+   */
   @Get()
   @ApiResponse({ status: 200, description: 'Users fetched successfully' })
   @ApiOperation({ summary: 'Get all users' })
@@ -40,6 +42,10 @@ export class UsersController {
     return await this.userService.getAllUsers();
   }
 
+  /**
+   *
+   * @returns
+   */
   @Get('active')
   @ApiResponse({
     status: 200,
@@ -50,6 +56,10 @@ export class UsersController {
     return await this.userService.getActiveUsers();
   }
 
+  /**
+   *
+   * @returns
+   */
   @Get('inactive')
   @ApiResponse({
     status: 200,
@@ -60,12 +70,22 @@ export class UsersController {
     return await this.userService.getInactivatedUsers();
   }
 
+  /**
+   *
+   * @param id
+   * @returns
+   */
   @Get('/:id')
   @ApiOperation({ summary: 'Get User by Id' })
   async getOneUser(@Param('id') id: number) {
     return await this.userService.getUserById(id);
   }
 
+  /**
+   *
+   * @param updateUserDto
+   * @returns
+   */
   @Put()
   @ApiOperation({ summary: 'Update User' })
   async updateUser(@Body() updateUserDto: UpdateUserDTO) {
@@ -74,6 +94,12 @@ export class UsersController {
     return await this.userService.updateUser(updateUserDto);
   }
 
+  /**
+   *
+   * @param id
+   * @param status
+   * @returns
+   */
   @Patch('status/:id/:status')
   @ApiOperation({ summary: 'Disactivate User' })
   async setUserStatus(
@@ -83,12 +109,22 @@ export class UsersController {
     return this.userService.setUserActiveStatus(id, status);
   }
 
+  /**
+   *
+   * @param registerDto
+   * @returns
+   */
   @Post('register')
   @ApiOperation({ summary: 'Register User' })
   public async registerUser(@Body() registerDto: RegisterDTO) {
     return await this.userService.register(registerDto);
   }
 
+  /**
+   *
+   * @param loginDto
+   * @returns
+   */
   @Post('login')
   @ApiOperation({ summary: 'Login User' })
   @HttpCode(HttpStatus.OK)
@@ -96,6 +132,11 @@ export class UsersController {
     return this.userService.login(loginDto);
   }
 
+  /**
+   *
+   * @param paylod
+   * @returns
+   */
   @ApiSecurity('bearer')
   @Post('current')
   @UseGuards(AuthChard)

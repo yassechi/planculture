@@ -1,14 +1,10 @@
-// src/rotations/rotation/rotation.service.ts
-
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Section } from 'src/entities/section.entity';
 import { BoardPlanDto, RawCulturePlanResult } from '../dtos/boardPlan.dto';
-import { LessThanOrEqual } from 'typeorm';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Vegetable } from 'src/entities/vegetable.entity';
-
-// Assurez-vous que Board, Sole, SectionPlan sont injectés dans le module
+import { Section } from 'src/entities/section.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { LessThanOrEqual } from 'typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class RotationService {
@@ -17,10 +13,16 @@ export class RotationService {
     private sectionRepository: Repository<Section>,
     @InjectRepository(Vegetable)
     private readonly vegetableRepository: Repository<Vegetable>,
-    // L'injection des autres repos est optionnelle si vous ne les utilisez pas directement,
-    // mais elle peut aider à forcer le chargement des métadonnées.
   ) {}
 
+  /**
+   *
+   * @param soleId
+   * @param year
+   * @param month
+   * @param periodMonths
+   * @returns
+   */
   async getCulturePlan(
     soleId: number,
     year: number,
@@ -89,8 +91,13 @@ export class RotationService {
     }));
   }
 
-  // Imports : Assurez-vous d'importer l'opérateur 'LessThanOrEqual' pour une meilleure logique de date
-
+  /**
+   *
+   * @param boardId
+   * @param vegetableId
+   * @param bypass
+   * @returns
+   */
   async canPlantVegetable(
     boardId: number,
     vegetableId: number,
@@ -104,7 +111,6 @@ export class RotationService {
     if (!vegetable) throw new NotFoundException('Vegetable not found');
 
     const family = vegetable.family;
-    // CORRECTION: Utilisation de 'primaire' tel que défini dans les données d'insertion
     const isPrimary = family.family_importance?.importance_name === 'primaire';
 
     // CHECK 1 - HISTORIQUE DE 5 ANS (Rotation des cultures pour les familles primaires)
@@ -112,7 +118,6 @@ export class RotationService {
       const fiveYearsAgo = new Date();
       fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear() - 5);
 
-      // CORRECTION: Filtrage initial sur la planche (boardId) et la date de début
       // On cherche toutes les sections de CETTE planche plantées depuis 5 ans
       const sectionsInLast5Years = await this.sectionRepository.find({
         where: {
@@ -195,6 +200,13 @@ export class RotationService {
     return { status: 'OK' };
   }
 
+  /**
+   *
+   * @param vegetableId
+   * @param startDate
+   * @param endDate
+   * @returns
+   */
   async findPlantableSections(
     vegetableId: number,
     startDate: Date,

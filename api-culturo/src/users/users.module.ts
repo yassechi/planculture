@@ -1,12 +1,11 @@
-import { Module } from '@nestjs/common';
 import { UsersController } from './users.controller';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { User_ } from 'src/entities/user_.entity';
-import { UsersService } from './users.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { Role } from 'src/entities/role.entity';
-import { JwtModule } from '@nestjs/jwt';
+import { UsersService } from './users.service';
 import { ConfigService } from '@nestjs/config';
-import { FamilyService } from 'src/vegetables/families/family.service';
+import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [

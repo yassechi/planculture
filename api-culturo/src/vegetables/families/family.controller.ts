@@ -1,16 +1,24 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
-import { FamilyService } from './family.service';
-import { ApiOperation } from '@nestjs/swagger';
 import { UpdateFamilyDTO } from './dtos/update.family.dto';
 import { CreateFamilyDTO } from './dtos/create.family.dto';
+import { FamilyService } from './family.service';
+import { ApiOperation } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 
 @Controller('family')
 export class FamilyController {
-   constructor(private readonly familyService: FamilyService) {}
+  constructor(private readonly familyService: FamilyService) {}
 
   /**
-   * GET /family
-   * Récupère toutes les familles
+   *
+   * @returns
    */
   @Get()
   @ApiOperation({ summary: 'Get all Familles' })
@@ -19,8 +27,9 @@ export class FamilyController {
   }
 
   /**
-   * GET /family/:id
-   * Récupère une famille par ID
+   *
+   * @param id
+   * @returns
    */
   @Get(':id')
   @ApiOperation({ summary: 'Get Family by Id' })
@@ -29,8 +38,9 @@ export class FamilyController {
   }
 
   /**
-   * POST /family
-   * Création d’une famille
+   *
+   * @param payload
+   * @returns
    */
   @Post()
   @ApiOperation({ summary: 'Create a Family' })
@@ -39,8 +49,9 @@ export class FamilyController {
   }
 
   /**
-   * PUT /family
-   * Mise à jour d’une famille
+   *
+   * @param payload
+   * @returns
    */
   @Put()
   @ApiOperation({ summary: 'Update a Family' })
@@ -49,8 +60,9 @@ export class FamilyController {
   }
 
   /**
-   * DELETE /family/:id
-   * Suppression d’une famille
+   *
+   * @param id
+   * @returns
    */
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a Family' })
@@ -58,5 +70,3 @@ export class FamilyController {
     return this.familyService.delFamily(id);
   }
 }
-
-

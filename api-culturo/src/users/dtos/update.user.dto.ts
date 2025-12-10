@@ -1,4 +1,4 @@
-// dtos/update-user.dto.ts
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEmail,
   IsOptional,
@@ -7,7 +7,6 @@ import {
   IsBoolean,
   IsDate,
 } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
 export class UpdateUserDTO {
   @IsNumber()
   @ApiProperty({ description: 'User ID' })

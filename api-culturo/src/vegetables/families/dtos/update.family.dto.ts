@@ -11,7 +11,7 @@ export class UpdateFamilyDTO {
   @IsNotEmpty()
   @ApiProperty({ description: 'The name of Family ' })
   family_name?: string;
-  
+
   @IsNumber()
   @IsNotEmpty()
   @ApiProperty({ description: 'The Id of Family importance ' })

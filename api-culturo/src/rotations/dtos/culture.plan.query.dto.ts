@@ -1,6 +1,6 @@
 import { IsInt, IsOptional, IsPositive, Max, Min } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { ApiProperty } from '@nestjs/swagger'; // <-- Import Swagger
 
 export class CulturePlanQueryDto {
   @ApiProperty({
@@ -18,10 +18,10 @@ export class CulturePlanQueryDto {
   @ApiProperty({
     description:
       "Le mois de départ de la période du plan (1 pour Janvier, 12 pour Décembre). Optionnel. Si omis, commence au 1er janvier de l'année.",
-    example: 3, // Mars
+    example: 3,
     minimum: 1,
     maximum: 12,
-    required: false, // Important pour Swagger
+    required: false,
     type: Number,
   })
   @IsOptional()
@@ -36,7 +36,7 @@ export class CulturePlanQueryDto {
       'La durée en mois à inclure dans le plan de culture, à partir du mois de départ. Doit être positif. Optionnel.',
     example: 6,
     minimum: 1,
-    required: false, // Important pour Swagger
+    required: false,
     type: Number,
   })
   @IsOptional()
