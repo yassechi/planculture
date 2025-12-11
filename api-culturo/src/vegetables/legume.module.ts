@@ -10,10 +10,19 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
+import { Variety } from 'src/entities/variety.entity';
+import { VarietyController } from './varieties/variety.controller';
+import { VarietyService } from './varieties/variety.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Family, Vegetable, Family_importance, Section]),
+    TypeOrmModule.forFeature([
+      Family,
+      Vegetable,
+      Family_importance,
+      Section,
+      Variety,
+    ]),
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
@@ -27,7 +36,7 @@ import { JwtModule } from '@nestjs/jwt';
       },
     }),
   ],
-  controllers: [FamilyController, VegetableController],
-  providers: [VegetableService, FamilyService],
+  controllers: [FamilyController, VegetableController, VarietyController],
+  providers: [VegetableService, FamilyService, VarietyService],
 })
 export class LegumeModule {}
