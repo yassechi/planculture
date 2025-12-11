@@ -10,10 +10,19 @@ import { VegetableService } from './vegetables/vegetable.service';
 import { FamilyService } from './families/family.service';
 import { Family_importance } from 'src/entities/family_importance.entity';
 import { Section } from 'src/entities/section.entity';
+import { Variety } from 'src/entities/variety.entity';
+import { VarietyController } from './varieties/variety.controller';
+import { VarietyService } from './varieties/variety.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Family, Vegetable, Family_importance, Section]),
+    TypeOrmModule.forFeature([
+      Family,
+      Vegetable,
+      Family_importance,
+      Section,
+      Variety,
+    ]),
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
@@ -27,7 +36,7 @@ import { Section } from 'src/entities/section.entity';
       },
     }),
   ],
-  controllers: [FamilyController, VegetableController],
-  providers: [VegetableService, FamilyService],
+  controllers: [FamilyController, VegetableController, VarietyController],
+  providers: [VegetableService, FamilyService, VarietyService],
 })
 export class LegumeModule {}
