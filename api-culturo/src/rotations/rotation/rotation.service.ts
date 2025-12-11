@@ -3,12 +3,14 @@ import {
   Injectable,
   NotFoundException,
   InternalServerErrorException,
+  BadRequestException,
 } from '@nestjs/common';
 import { Vegetable } from 'src/entities/vegetable.entity';
 import { Section } from 'src/entities/section.entity';
 import { SectionPlan } from 'src/entities/section_plan.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { PlantableVegetableDto } from '../dtos/plantable.vegetable.dro';
 
 interface RawCulturePlanResult {
   board_id_board: number;
@@ -362,6 +364,163 @@ export class RotationService {
 
       throw new InternalServerErrorException(
         `Erreur findPlantableSections: ${errorMessage}`,
+      );
+    }
+  }
+
+  /**
+   *
+   * @param sectionPlanId
+   * @param sectionNumber
+   * @param startDate
+   * @param endDate
+   * @returns
+   */
+  async findPlantableVegetables(
+    sectionPlanId: number,
+    sectionNumber: number,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<PlantableVegetableDto[]> {
+    try {
+      // 1. Récupérer le SectionPlan avec toutes ses sections
+      const sectionPlan = await this.sectionPlanRepository.findOne({
+        where: { id_section_plan: sectionPlanId },
+        relations: [
+          'board',
+          'sections',
+          'sections.vegetable',
+          'sections.vegetable.family',
+          'sections.vegetable.family.family_importance',
+        ],
+      });
+
+      if (!sectionPlan) {
+        throw new NotFoundException(`SectionPlan ${sectionPlanId} non trouvé.`);
+      }
+
+      // 2. Vérifier que le numéro de section est valide
+      if (sectionNumber < 1 || sectionNumber > sectionPlan.number_of_section) {
+        throw new BadRequestException(
+          `Section ${sectionNumber} invalide. Board a ${sectionPlan.number_of_section} sections.`,
+        );
+      }
+
+      // ========================================
+      // ÉTAPE 1 : Vérifier l'occupation physique de LA section ciblée
+      // ========================================
+      const sectionsAtLocation = sectionPlan.sections.filter(
+        (s) => s.section_number === sectionNumber,
+      );
+
+      for (const section of sectionsAtLocation) {
+        if (!section.vegetable) continue;
+
+        const isOccupiedDuringPeriod =
+          section.section_active ||
+          (section.start_date <= endDate && section.end_date >= startDate);
+
+        if (isOccupiedDuringPeriod) {
+          // La section est physiquement occupée, aucun légume ne peut être planté
+          return [];
+        }
+      }
+
+      // ========================================
+      // ÉTAPE 2 : Identifier les restrictions au niveau BOARD
+      // ========================================
+      const fiveYearsAgo = new Date(startDate);
+      fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear() - 5);
+
+      // Familles primaires actuellement actives sur la board
+      const activePrimaryFamilies = new Set<number>();
+
+      // Familles primaires plantées dans les 5 dernières années sur la board
+      const recentPrimaryFamilies = new Set<number>();
+
+      for (const section of sectionPlan.sections) {
+        if (!section.vegetable?.family) continue;
+
+        const familyId = section.vegetable.family.id_family;
+        const isPrimary =
+          section.vegetable.family.family_importance?.importance_name ===
+          'primaire';
+
+        if (!isPrimary) continue;
+
+        // Collecter les familles primaires actives
+        if (section.section_active) {
+          activePrimaryFamilies.add(familyId);
+        }
+
+        // Collecter les familles primaires récentes (5 ans)
+        if (section.end_date >= fiveYearsAgo) {
+          recentPrimaryFamilies.add(familyId);
+        }
+      }
+
+      // ========================================
+      // ÉTAPE 3 : Récupérer tous les légumes disponibles
+      // ========================================
+      const allVegetables = await this.vegetableRepository.find({
+        relations: ['family', 'family.family_importance'],
+      });
+
+      // ========================================
+      // ÉTAPE 4 : Filtrer les légumes selon les règles
+      // ========================================
+      const plantableVegetables: PlantableVegetableDto[] = [];
+
+      for (const vegetable of allVegetables) {
+        if (!vegetable.family?.family_importance) continue;
+
+        const familyId = vegetable.family.id_family;
+        const isPrimary =
+          vegetable.family.family_importance.importance_name === 'primaire';
+
+        let isPlantable = true;
+
+        // RÈGLE BOARD 1 : Cohabitation de familles primaires
+        // Si le légume est primaire ET qu'une autre famille primaire est active
+        // → Le légume n'est PAS plantable
+        if (isPrimary && activePrimaryFamilies.size > 0) {
+          if (!activePrimaryFamilies.has(familyId)) {
+            isPlantable = false;
+          }
+        }
+
+        // RÈGLE BOARD 2 : Rotation 5 ans pour les primaires
+        // Si le légume est primaire ET que sa famille a été plantée récemment
+        // → Le légume n'est PAS plantable
+        if (isPrimary && recentPrimaryFamilies.has(familyId)) {
+          isPlantable = false;
+        }
+
+        if (isPlantable) {
+          plantableVegetables.push({
+            vegetableId: vegetable.id_vegetable,
+            vegetableName: vegetable.vegetable_name,
+            familyId: vegetable.family.id_family,
+            familyName: vegetable.family.family_name,
+            importance: vegetable.family.family_importance.importance_name,
+            lastPlantedInSection:
+              sectionsAtLocation.length > 0
+                ? (sectionsAtLocation[sectionsAtLocation.length - 1].vegetable
+                    ?.vegetable_name ?? null)
+                : null,
+            neverPlantedInSection: sectionsAtLocation.length === 0,
+          });
+        }
+      }
+
+      return plantableVegetables;
+    } catch (e) {
+      const errorMessage = isError(e)
+        ? e.message
+        : 'Erreur inconnue lors de la recherche des légumes plantables.';
+
+      throw new InternalServerErrorException(
+        `Erreur findPlantableVegetables: ${errorMessage}`,
       );
     }
   }

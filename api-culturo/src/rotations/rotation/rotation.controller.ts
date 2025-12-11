@@ -24,6 +24,7 @@ import {
 } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { PlantableVegetableDto } from '../dtos/plantable.vegetable.dro';
 
 @ApiTags('Rotations')
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -39,6 +40,12 @@ export class RotationController {
   /**
    * Obtenir le Plan de Culture par Sole
    * GET /rotations/plan/:soleId?year=2025&month=3&periodMonths=6
+   */
+  /**
+   *
+   * @param soleId
+   * @param query
+   * @returns
    */
   @ApiOperation({
     summary:
@@ -123,6 +130,13 @@ export class RotationController {
   /**
    * Trouver les Sections Plantables
    * GET /rotations/plantable-sections?vegetableId=21&startDate=2025-03-01&endDate=2025-07-31
+   */
+  /**
+   *
+   * @param vegetableId
+   * @param startDate
+   * @param endDate
+   * @returns
    */
   @ApiOperation({
     summary:
@@ -210,5 +224,167 @@ export class RotationController {
     );
 
     return plantableSections;
+  }
+
+  // /**
+  //  *
+  //  * @param sectionPlanId
+  //  * @param sectionNumber
+  //  * @param startDateStr
+  //  * @param endDateStr
+  //  * @returns
+  //  */
+  // @Get(
+  //   'section-plan/:sectionPlanId/section/:sectionNumber/plantable-vegetables',
+  // )
+  // @ApiOperation({
+  //   summary: 'Récupérer les légumes plantables dans une section spécifique',
+  //   description:
+  //     'Retourne la liste des légumes qui peuvent être plantés dans une section donnée pour une période définie, en respectant les règles de rotation et de cohabitation.',
+  // })
+  // @ApiParam({
+  //   name: 'sectionPlanId',
+  //   description: 'ID du plan de section (board)',
+  //   type: Number,
+  // })
+  // @ApiParam({
+  //   name: 'sectionNumber',
+  //   description: 'Numéro de la section dans le plan',
+  //   type: Number,
+  // })
+  // @ApiQuery({
+  //   name: 'startDate',
+  //   description: 'Date de début de plantation (ISO 8601)',
+  //   type: String,
+  //   example: '2024-03-15',
+  // })
+  // @ApiQuery({
+  //   name: 'endDate',
+  //   description: 'Date de fin de plantation (ISO 8601)',
+  //   type: String,
+  //   example: '2024-09-30',
+  // })
+  // @ApiResponse({
+  //   status: 200,
+  //   description: 'Liste des légumes plantables',
+  //   type: [PlantableVegetableDto],
+  // })
+  // @ApiResponse({
+  //   status: 404,
+  //   description: 'SectionPlan non trouvé',
+  // })
+  // @ApiResponse({
+  //   status: 400,
+  //   description: 'Paramètres invalides (dates ou numéro de section)',
+  // })
+  // async findPlantableVegetables(
+  //   @Param('sectionPlanId', ParseIntPipe) sectionPlanId: number,
+  //   @Param('sectionNumber', ParseIntPipe) sectionNumber: number,
+  //   @Query('startDate') startDateStr: string,
+  //   @Query('endDate') endDateStr: string,
+  // ): Promise<PlantableVegetableDto[]> {
+  //   // Validation des dates
+  //   const startDate = new Date(startDateStr);
+  //   const endDate = new Date(endDateStr);
+
+  //   if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+  //     throw new BadRequestException(
+  //       'Dates invalides. Format attendu: YYYY-MM-DD',
+  //     );
+  //   }
+
+  //   if (startDate >= endDate) {
+  //     throw new BadRequestException(
+  //       'La date de début doit être antérieure à la date de fin.',
+  //     );
+  //   }
+
+  //   return await this.rotationService.findPlantableVegetables(
+  //     sectionPlanId,
+  //     sectionNumber,
+  //     startDate,
+  //     endDate,
+  //   );
+  // }
+
+  /**
+   *
+   * @param sectionPlanId
+   * @param sectionNumber
+   * @param startDateStr
+   * @param endDateStr
+   * @returns
+   */
+  @Get('plantable-vegetables')
+  @ApiOperation({
+    summary: 'Récupérer les légumes plantables dans une section spécifique',
+    description:
+      'Retourne la liste des légumes qui peuvent être plantés dans une section donnée pour une période définie, en respectant les règles de rotation et de cohabitation.',
+  })
+  @ApiQuery({
+    name: 'sectionPlanId',
+    description: 'ID du plan de section (board)',
+    type: Number,
+    example: 3,
+  })
+  @ApiQuery({
+    name: 'sectionNumber',
+    description: 'Numéro de la section dans le plan',
+    type: Number,
+    example: 2,
+  })
+  @ApiQuery({
+    name: 'startDate',
+    description: 'Date de début de plantation (ISO 8601)',
+    type: String,
+    example: '2024-03-15',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    description: 'Date de fin de plantation (ISO 8601)',
+    type: String,
+    example: '2024-09-30',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Liste des légumes plantables',
+    type: [PlantableVegetableDto],
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'SectionPlan non trouvé',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Paramètres invalides (dates ou numéro de section)',
+  })
+  async findPlantableVegetables(
+    @Query('sectionPlanId', ParseIntPipe) sectionPlanId: number,
+    @Query('sectionNumber', ParseIntPipe) sectionNumber: number,
+    @Query('startDate') startDateStr: string,
+    @Query('endDate') endDateStr: string,
+  ): Promise<PlantableVegetableDto[]> {
+    // Validation des dates
+    const startDate = new Date(startDateStr);
+    const endDate = new Date(endDateStr);
+
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      throw new BadRequestException(
+        'Dates invalides. Format attendu: YYYY-MM-DD',
+      );
+    }
+
+    if (startDate >= endDate) {
+      throw new BadRequestException(
+        'La date de début doit être antérieure à la date de fin.',
+      );
+    }
+
+    return await this.rotationService.findPlantableVegetables(
+      sectionPlanId,
+      sectionNumber,
+      startDate,
+      endDate,
+    );
   }
 }
