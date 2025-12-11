@@ -10,9 +10,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { Variety } from 'src/entities/variety.entity';
+
 import { VarietyController } from './varieties/variety.controller';
 import { VarietyService } from './varieties/variety.service';
+import { Variety } from 'src/entities/variety.entity';
 
 @Module({
   imports: [

@@ -20,6 +20,7 @@ import { Sole } from './entities/sole.entity';
 import { Role } from './entities/role.entity';
 import { Logger } from '@nestjs/common';
 import 'reflect-metadata';
+import { Variety } from './entities/variety.entity';
 
 export const AppDataSourceOptions: DataSourceOptions = {
   type: 'postgres',
@@ -51,6 +52,7 @@ export const AppDataSourceOptions: DataSourceOptions = {
     Amended,
     Treated,
     Treatment,
+    Variety,
   ],
   synchronize: true, // dev uniquement
 };

@@ -52,6 +52,6 @@ export class Vegetable {
   @OneToMany(() => OrderDetail, (orderDetail) => orderDetail.vegetable)
   orderDetails: OrderDetail[];
 
-  @OneToMany(() => Variety, (varity) => varity.vegetable)
+  @OneToMany(() => Variety, (variety) => variety.vegetable)
   varieties: Variety[];
 }
