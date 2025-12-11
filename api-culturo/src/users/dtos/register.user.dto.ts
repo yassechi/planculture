@@ -26,7 +26,7 @@ export class RegisterDTO {
   @IsDate()
   @IsNotEmpty()
   @ApiProperty({ description: "The user's BirthDay" })
-  birth_day: Date;
+  birth_date: Date;
 
   @IsEmail()
   @IsNotEmpty()
