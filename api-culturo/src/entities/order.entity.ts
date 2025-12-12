@@ -13,10 +13,10 @@ export class Order {
   @PrimaryGeneratedColumn()
   id_order: number;
 
-  @Column()
+  @Column({ type: 'date' })
   order_date: Date;
 
-  @Column()
+  @Column({ type: 'date' })
   order_delivery: Date;
 
   @ManyToOne(() => User_, (user_) => user_.orders)

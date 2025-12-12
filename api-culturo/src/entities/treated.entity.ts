@@ -7,7 +7,7 @@ export class Treated {
   @PrimaryGeneratedColumn()
   id_treated: number;
 
-  @Column()
+  @Column({ type: 'date' })
   treatment_date: Date;
 
   @Column()

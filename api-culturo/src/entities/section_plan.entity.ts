@@ -14,7 +14,7 @@ export class SectionPlan {
   @PrimaryGeneratedColumn()
   id_section_plan: number;
 
-  @Column()
+  @Column({ type: 'date' })
   creation_date: Date;
 
   @Column()

@@ -11,6 +11,20 @@ import { SectionPlan } from 'src/entities/section_plan.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PlantableVegetableDto } from '../dtos/plantable.vegetable.dro';
+import { Board } from 'src/entities/board.entity';
+
+type PlantingSuccess = {
+  status: 'OK';
+  section: Section;
+};
+
+type PlantingWarning = {
+  status: 'WARNING';
+  reason: string;
+  neededBypass: boolean;
+};
+
+type PlantingResult = PlantingSuccess | PlantingWarning;
 
 interface RawCulturePlanResult {
   board_id_board: number;
@@ -36,6 +50,8 @@ export class RotationService {
     private readonly vegetableRepository: Repository<Vegetable>,
     @InjectRepository(SectionPlan)
     private sectionPlanRepository: Repository<SectionPlan>,
+    @InjectRepository(Board)
+    private boardRepository: Repository<Board>,
   ) {}
 
   /**
@@ -521,6 +537,133 @@ export class RotationService {
 
       throw new InternalServerErrorException(
         `Erreur findPlantableVegetables: ${errorMessage}`,
+      );
+    }
+  }
+
+  /**
+   * Ajoute un légume sur une planche avec toutes les vérifications nécessaires.
+   * Crée un SectionPlan si nécessaire.
+   */
+  async addVegetableToBoard(
+    boardId: number,
+    sectionNumber: number,
+    vegetableId: number,
+    startDate: Date,
+    endDate: Date,
+    quantityPlanted: number = 0,
+    bypass: boolean = false,
+  ): Promise<PlantingResult> {
+    try {
+      // 1. Vérifier que la planche existe
+      const board = await this.boardRepository.findOne({
+        where: { id_board: boardId },
+      });
+
+      if (!board) {
+        throw new NotFoundException(`Planche ${boardId} non trouvée.`);
+      }
+
+      // 2. Vérifier que le légume existe avec sa famille
+      const vegetable = await this.vegetableRepository.findOne({
+        where: { id_vegetable: vegetableId },
+        relations: ['family', 'family.family_importance'],
+      });
+
+      if (!vegetable) {
+        throw new NotFoundException(`Légume ${vegetableId} non trouvé.`);
+      }
+
+      // 3. Chercher s'il existe un SectionPlan actif pour cette planche
+      let sectionPlan = await this.sectionPlanRepository.findOne({
+        where: {
+          board: { id_board: boardId },
+          section_plan_active: true,
+        },
+        relations: [
+          'board',
+          'sections',
+          'sections.vegetable',
+          'sections.vegetable.family',
+          'sections.vegetable.family.family_importance',
+        ],
+      });
+
+      // 4. Si pas de SectionPlan, en créer un
+      if (!sectionPlan) {
+        const numberOfSections = 4; // Valeur par défaut, à adapter selon tes besoins
+
+        sectionPlan = this.sectionPlanRepository.create({
+          board: board,
+          number_of_section: numberOfSections,
+          section_plan_active: true,
+        });
+
+        sectionPlan = await this.sectionPlanRepository.save(sectionPlan);
+      }
+
+      // 5. Vérifier que le numéro de section est valide
+      if (sectionNumber < 1 || sectionNumber > sectionPlan.number_of_section) {
+        throw new BadRequestException(
+          `Section ${sectionNumber} invalide. Cette planche a ${sectionPlan.number_of_section} sections.`,
+        );
+      }
+
+      // 6. Vérifier si le légume est plantable dans cette section
+      const plantableVegetables = await this.findPlantableVegetables(
+        sectionPlan.id_section_plan,
+        sectionNumber,
+        startDate,
+        endDate,
+      );
+
+      const isVegetablePlantable = plantableVegetables.some(
+        (pv) => pv.vegetableId === vegetableId,
+      );
+
+      if (!isVegetablePlantable && !bypass) {
+        // Retourner exactement le format de canPlantVegetable
+        const checkResult = await this.canPlantVegetable(
+          boardId,
+          vegetableId,
+          bypass,
+        );
+
+        if (checkResult.status === 'WARNING') {
+          return {
+            status: 'WARNING',
+            reason:
+              checkResult.reason ||
+              'Ce légume ne peut pas être planté dans cette section selon les règles de rotation.',
+            neededBypass: checkResult.neededBypass || true,
+          };
+        }
+      }
+
+      // 7. Créer la section avec le légume
+      const newSection = this.sectionRepository.create({
+        sectionPlan: sectionPlan,
+        section_number: sectionNumber,
+        vegetable: vegetable,
+        start_date: startDate,
+        end_date: endDate,
+        quantity_planted: quantityPlanted,
+        section_active: true,
+      });
+
+      const savedSection = await this.sectionRepository.save(newSection);
+
+      return {
+        status: 'OK',
+        section: savedSection,
+      };
+    } catch (error: unknown) {
+      const errorMessage = isError(error)
+        ? error.message
+        : "Erreur inconnue lors de l'ajout du légume.";
+
+      throw new InternalServerErrorException(
+        `Erreur addVegetableToBoard: ${errorMessage}`,
       );
     }
   }

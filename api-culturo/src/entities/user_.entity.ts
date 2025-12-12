@@ -25,7 +25,6 @@ export class User_ {
   user_last_name: string;
 
   @Column({ type: 'date' })
-  @CreateDateColumn({ type: 'timestamp' })
   birth_date: Date;
 
   @Column({ type: 'varchar', length: '150', unique: true })

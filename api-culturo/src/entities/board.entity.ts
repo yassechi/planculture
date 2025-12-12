@@ -31,16 +31,10 @@ export class Board {
   @Column()
   id_sole: number;
 
-  // @ManyToOne(() => Sole, (sole) => sole.boards)
-  // @JoinColumn({ name: 'id_sole' })
-  // sole: Sole;
-
   @ManyToOne(() => Sole, (sole) => sole.boards)
   @JoinColumn({ name: 'id_sole' })
   sole: Sole; // ⬅️ Nom de la propriété !
 
-  // 🚨 CORRECTION : Relation One-to-Many vers SectionPlan
-  // Un Board est lié à PLUSIEURS SectionPlans
   @OneToMany(() => SectionPlan, (sectionPlan) => sectionPlan.board)
   sectionPlans: SectionPlan[];
 

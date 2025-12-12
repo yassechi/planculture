@@ -6,7 +6,7 @@ export class Watering {
   @PrimaryGeneratedColumn()
   id_watering: number;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'date' })
   watering_date: Date;
 
   @ManyToOne(() => Section, (section) => section.waterings)

@@ -7,7 +7,7 @@ export class Harvest {
   @PrimaryGeneratedColumn()
   id_harvest: number;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'date' })
   harvest_date: Date;
 
   @Column()

@@ -1,7 +1,6 @@
 import { SectionPlan } from './section_plan.entity';
 import {
   Column,
-  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -20,15 +19,13 @@ export class Section {
   @Column()
   section_number: number;
 
-  @Column({ type: 'timestamp' })
-  @CreateDateColumn({ type: 'timestamp' })
+  @Column({ type: 'date' })
   start_date: Date;
 
   @Column()
   quantity_planted: number;
 
-  @Column({ type: 'timestamp' })
-  @CreateDateColumn({ type: 'timestamp' })
+  @Column({ type: 'date' })
   end_date: Date;
 
   @Column()

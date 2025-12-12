@@ -7,8 +7,10 @@ export class Price {
   id_price: number;
   @Column()
   vegetable_price: number;
-  @Column()
+
+  @Column({ type: 'date' })
   price_date: Date;
+
   @Column()
   active_price: boolean;
 

@@ -13,6 +13,7 @@ import {
   UsePipes,
   ValidationPipe,
   BadRequestException,
+  HttpStatus,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -25,6 +26,11 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PlantableVegetableDto } from '../dtos/plantable.vegetable.dro';
+import {
+  PlantingSuccessResponse,
+  PlantingWarningResponse,
+} from '../dtos/planting.succes.warning.dto';
+import { AddVegetableToBoardDto } from '../dtos/add.vegetable.section';
 
 @ApiTags('Rotations')
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -386,5 +392,56 @@ export class RotationController {
       startDate,
       endDate,
     );
+  }
+
+  /**
+   * Ajoute un légume sur une planche avec vérification des règles de rotation
+   */
+  @Post('add-vegetable')
+  @ApiOperation({
+    summary: 'Ajouter un légume sur une planche',
+    description: `
+    Ajoute un légume sur une section d'une planche en vérifiant :
+    - Les règles de rotation (5 ans pour les familles primaires)
+    - Les règles de cohabitation (une seule famille primaire active par planche)
+    - L'occupation physique de la section
+    
+    Si un SectionPlan n'existe pas pour la planche, il sera créé automatiquement.
+  `,
+  })
+  @ApiBody({
+    type: AddVegetableToBoardDto,
+    description: 'Données pour ajouter un légume sur une planche',
+  })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Légume planté avec succès',
+    type: PlantingSuccessResponse,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Règle de rotation violée - bypass nécessaire',
+    type: PlantingWarningResponse,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Planche ou légume non trouvé',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Numéro de section invalide',
+  })
+  async addVegetableToBoard(@Body() dto: AddVegetableToBoardDto) {
+    const result = await this.rotationService.addVegetableToBoard(
+      dto.boardId,
+      dto.sectionNumber,
+      dto.vegetableId,
+      new Date(dto.startDate),
+      new Date(dto.endDate),
+      dto.quantityPlanted || 0,
+      dto.bypass || false,
+    );
+
+    return result;
   }
 }
