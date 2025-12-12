@@ -600,6 +600,26 @@ export class RotationService {
         });
 
         sectionPlan = await this.sectionPlanRepository.save(sectionPlan);
+
+        // Recharger avec les relations nécessaires
+        const reloadedSectionPlan = await this.sectionPlanRepository.findOne({
+          where: { id_section_plan: sectionPlan.id_section_plan },
+          relations: [
+            'board',
+            'sections',
+            'sections.vegetable',
+            'sections.vegetable.family',
+            'sections.vegetable.family.family_importance',
+          ],
+        });
+
+        if (!reloadedSectionPlan) {
+          throw new InternalServerErrorException(
+            'Erreur lors de la création du plan de section.',
+          );
+        }
+
+        sectionPlan = reloadedSectionPlan;
       }
 
       // 5. Vérifier que le numéro de section est valide
@@ -609,7 +629,23 @@ export class RotationService {
         );
       }
 
-      // 6. Vérifier si le légume est plantable dans cette section
+      // 6. Vérifier si une section active existe déjà avec ce numéro
+      const existingActiveSection = await this.sectionRepository.findOne({
+        where: {
+          sectionPlan: { id_section_plan: sectionPlan.id_section_plan },
+          section_number: sectionNumber,
+          section_active: true,
+        },
+        relations: ['vegetable'],
+      });
+
+      if (existingActiveSection) {
+        throw new BadRequestException(
+          `Une section active existe déjà avec le numéro ${sectionNumber} (${existingActiveSection.vegetable?.vegetable_name || 'légume inconnu'}). Veuillez d'abord désactiver la section existante.`,
+        );
+      }
+
+      // 7. Vérifier si le légume est plantable dans cette section
       const plantableVegetables = await this.findPlantableVegetables(
         sectionPlan.id_section_plan,
         sectionNumber,
@@ -633,14 +669,14 @@ export class RotationService {
           return {
             status: 'WARNING',
             reason:
-              checkResult.reason ||
+              checkResult.reason ??
               'Ce légume ne peut pas être planté dans cette section selon les règles de rotation.',
-            neededBypass: checkResult.neededBypass || true,
+            neededBypass: checkResult.neededBypass ?? true,
           };
         }
       }
 
-      // 7. Créer la section avec le légume
+      // 8. Créer la section avec le légume
       const newSection = this.sectionRepository.create({
         sectionPlan: sectionPlan,
         section_number: sectionNumber,
@@ -653,11 +689,38 @@ export class RotationService {
 
       const savedSection = await this.sectionRepository.save(newSection);
 
+      // 9. Recharger la section avec seulement les relations nécessaires
+      const sectionWithRelations = await this.sectionRepository.findOne({
+        where: { id_section: savedSection.id_section },
+        relations: [
+          'vegetable',
+          'vegetable.family',
+          'vegetable.family.family_importance',
+          'sectionPlan',
+          'sectionPlan.board',
+        ],
+      });
+
+      if (!sectionWithRelations) {
+        throw new InternalServerErrorException(
+          'Erreur lors de la récupération de la section créée.',
+        );
+      }
+
       return {
         status: 'OK',
-        section: savedSection,
+        section: sectionWithRelations,
       };
     } catch (error: unknown) {
+      // Si c'est déjà une exception NestJS, la relancer telle quelle
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
+        throw error;
+      }
+
+      // Sinon, envelopper dans InternalServerErrorException
       const errorMessage = isError(error)
         ? error.message
         : "Erreur inconnue lors de l'ajout du légume.";
