@@ -40,13 +40,14 @@ INSERT INTO treatment (treatment_name) VALUES
 -- =====================================================
 -- 6. USER
 -- =====================================================
+-- Mot de passe "123456" hashé avec bcrypt salt 10
 INSERT INTO "user_" (
     user_first_name, user_last_name, birth_date,
     email, hpassword, phone, user_active, "id_role"
 ) VALUES
-('Sylvie','Dubois','1980-01-01','sylvie@culturo.be','$2a$10$x','0471111111',TRUE,1),
-('Marc','Lefevre','1985-05-15','marc@culturo.be','$2a$10$x','0472222222',TRUE,2),
-('Antoine','Ferma','1995-01-01','antoine@culturo.be','$2a$10$x','0473333333',TRUE,2);
+('Sylvie','Dubois','1980-01-01','sylvie@culturo.be','$2b$10$CwTycUXWue0Thq9StjUM0uJ8ZhYV6nNRtlF5l.k6kXbi6cJQFjQTi','0471111111',TRUE,1),
+('Marc','Lefevre','1985-05-15','marc@culturo.be','$2b$10$CwTycUXWue0Thq9StjUM0uJ8ZhYV6nNRtlF5l.k6kXbi6cJQFjQTi','0472222222',TRUE,2),
+('Antoine','Ferma','1995-01-01','antoine@culturo.be','$2b$10$CwTycUXWue0Thq9StjUM0uJ8ZhYV6nNRtlF5l.k6kXbi6cJQFjQTi','0473333333',TRUE,2);
 
 -- =====================================================
 -- 7. EXPLOITATION
@@ -72,7 +73,7 @@ INSERT INTO board (board_name, board_width, board_length, board_active, id_sole)
 ('N5',120,500,TRUE,1),('N6',120,500,TRUE,1),('N7',120,500,TRUE,1),('N8',120,500,TRUE,1),
 ('N9',120,500,TRUE,1),('N10',120,500,TRUE,1);
 
--- SOLE 2 (boards uniquement)
+-- SOLE 2
 INSERT INTO board (board_name, board_width, board_length, board_active, id_sole) VALUES
 ('S2-1',120,500,TRUE,2),('S2-2',120,500,TRUE,2),('S2-3',120,500,TRUE,2),('S2-4',120,500,TRUE,2),
 ('S2-5',120,500,TRUE,2),('S2-6',120,500,TRUE,2),('S2-7',120,500,TRUE,2),('S2-8',120,500,TRUE,2),
@@ -144,6 +145,7 @@ INSERT INTO section (section_number, start_date, end_date, quantity_planted, uni
 (1,'2024-03-29','2024-03-31',0,'kg',TRUE,29),(2,'2024-03-29','2024-03-31',0,'kg',TRUE,29),(3,'2024-03-29','2024-03-31',0,'kg',TRUE,29),
 (1,'2024-03-30','2024-03-31',0,'kg',TRUE,30),(2,'2024-03-30','2024-03-31',0,'kg',TRUE,30),(3,'2024-03-30','2024-03-31',0,'kg',TRUE,30);
 
+
 -- =====================================================
 -- 12. AMENDED
 -- =====================================================
@@ -177,3 +179,20 @@ INSERT INTO harvest (harvest_date, quantity, quantity_unit, "user_idUser", "sect
 ('2024-06-01',55,'kg',1,3);
 
 COMMIT;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
