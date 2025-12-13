@@ -6,6 +6,7 @@ import { UsersService } from './users.service';
 import { ConfigService } from '@nestjs/config';
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
+import { EmailModule } from 'src/email/email.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { JwtModule } from '@nestjs/jwt';
         };
       },
     }),
+    EmailModule,
   ],
   providers: [UsersService],
   controllers: [UsersController],

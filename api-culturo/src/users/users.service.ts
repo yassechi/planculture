@@ -1,5 +1,6 @@
 import { UpdateUserDTO } from './dtos/update.user.dto';
 import { RegisterDTO } from './dtos/register.user.dto';
+import { EmailService } from 'src/email/email.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User_ } from 'src/entities/user_.entity';
 import { Role } from 'src/entities/role.entity';
@@ -24,6 +25,7 @@ export class UsersService {
     private readonly roleRepository: Repository<Role>,
     private readonly config: ConfigService,
     private readonly jwtService: JwtService, // Problem ENV
+    private readonly emailService: EmailService,
   ) {}
 
   /**
@@ -164,6 +166,18 @@ export class UsersService {
 
     const savedUser = await this.userRepository.save(newUser);
 
+    // 🎯 Envoi de l'email de bienvenue
+    try {
+      await this.emailService.sendWelcomeEmail(
+        savedUser.email,
+        savedUser.user_first_name,
+        savedUser.user_last_name,
+      );
+    } catch (error) {
+      console.error('Erreur envoi email:', error);
+      // On ne bloque pas l'inscription si l'email échoue
+    }
+
     // JWT Payload
     const payload: JWTPayloadType = {
       id: savedUser.id_user,
@@ -176,29 +190,31 @@ export class UsersService {
     return { id: savedUser.id_user, accessToken };
   }
 
+
   /**
-   * Login In user
-   * @param loginDTo data for log in to user account
-   * @returns JWT (acces token)
-   */
-  public async login(loginDTo: LoginDTO) {
-    const { email, hpassword } = loginDTo;
-    const userFromDb = await this.userRepository.findOne({ where: { email } });
-    console.log('userFromDb:', userFromDb);
-    if (!userFromDb) throw new BadRequestException('unregistered user');
+ * Login In user
+ * @param loginDTo data for log in to user account
+ * @returns JWT (acces token)
+ */
+public async login(loginDTo: LoginDTO) {
+  const { email, hpassword } = loginDTo;
+  const userFromDb = await this.userRepository.findOne({ where: { email } });
+  
+  if (!userFromDb) throw new BadRequestException('unregistered user');
 
-    hpassword.trim();
-    // const isPassMatch = await bcrypt.compare(hpassword, userFromDb.hpassword);
-    // if (!isPassMatch) throw new BadRequestException('invalid password');
+  // ✅ Vérification du mot de passe (décommenté)
+  const isPassMatch = await bcrypt.compare(hpassword.trim(), userFromDb.hpassword);
+  if (!isPassMatch) throw new BadRequestException('invalid password');
 
-    const payload: JWTPayloadType = {
-      id: userFromDb.id_user,
-      email: userFromDb.email,
-      id_role: userFromDb.id_role,
-    };
-    const accessToken = await this.jwtService.signAsync(payload);
-    return { id: userFromDb.id_user, accessToken };
-  }
+  const payload: JWTPayloadType = {
+    id: userFromDb.id_user,
+    email: userFromDb.email,
+    id_role: userFromDb.id_role,
+  };
+  
+  const accessToken = await this.jwtService.signAsync(payload);
+  return { id: userFromDb.id_user, accessToken };
+}
 
   /**
    * Get Current user connected (Logged)
