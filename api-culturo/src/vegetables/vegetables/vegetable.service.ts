@@ -6,6 +6,7 @@ import { Section } from 'src/entities/section.entity';
 import { Family } from 'src/entities/family.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Variety } from 'src/entities/variety.entity';
 
 @Injectable()
 export class VegetableService {
@@ -107,5 +108,25 @@ export class VegetableService {
 
     await this.vegetableRepository.delete({ id_vegetable: id });
     return { msg: 'Vegetable deleted successfully' };
+  }
+
+  async getVarietiesVegetable(id: string | number): Promise<Variety[]> {
+    // Convertit l'id en nombre si nécessaire
+    const vegetableId = typeof id === 'string' ? parseInt(id, 10) : id;
+
+    if (isNaN(vegetableId)) {
+      throw new Error(`Invalid vegetable ID: ${id}`);
+    }
+
+    const veg = await this.vegetableRepository.findOne({
+      where: { id_vegetable: vegetableId },
+      relations: ['varieties'],
+    });
+
+    if (!veg) {
+      throw new NotFoundException(`Vegetable with ID ${vegetableId} not found`);
+    }
+
+    return veg.varieties;
   }
 }

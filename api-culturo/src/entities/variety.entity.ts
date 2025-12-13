@@ -15,6 +15,9 @@ export class Variety {
   @Column()
   variety_name: string;
 
+  @Column()
+  id_vegetable: number;
+
   @ManyToOne(() => Vegetable, (vegetable) => vegetable.varieties)
   @JoinColumn({ name: 'id_vegetable' })
   vegetable: Vegetable;

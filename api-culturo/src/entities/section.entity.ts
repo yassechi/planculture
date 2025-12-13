@@ -31,6 +31,9 @@ export class Section {
   @Column()
   section_active: boolean;
 
+  @Column()
+  unity: string;
+
   @OneToMany(() => Harvest, (harvest) => harvest.section)
   harvets: Harvest[];
 

@@ -89,4 +89,24 @@ export class VarietyService {
 
     return { msg: 'Variété supprimée avec succès' };
   }
+
+  async getVarietiesVegetable(id: string | number): Promise<Variety[]> {
+    // Convertit l'id en nombre si nécessaire
+    const vegetableId = typeof id === 'string' ? parseInt(id, 10) : id;
+
+    if (isNaN(vegetableId)) {
+      throw new Error(`Invalid vegetable ID: ${id}`);
+    }
+
+    const veg = await this.vegetableRepository.findOne({
+      where: { id_vegetable: vegetableId },
+      relations: ['varieties'],
+    });
+
+    if (!veg) {
+      throw new NotFoundException(`Vegetable with ID ${vegetableId} not found`);
+    }
+
+    return veg.varieties;
+  }
 }

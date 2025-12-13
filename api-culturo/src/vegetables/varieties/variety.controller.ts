@@ -3,7 +3,9 @@ import {
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
+  ParseIntPipe,
   Post,
   Put,
   Query,
@@ -12,6 +14,7 @@ import { ApiOperation } from '@nestjs/swagger';
 import { VarietyService } from './variety.service';
 import { CreateVarietyDTO } from './dtos/create.vartiety.dto';
 import { UpdateVarietyDTO } from './dtos/update.variety.dto';
+import { Variety } from 'src/entities/variety.entity';
 
 @Controller('varieties')
 export class VarietyController {
@@ -62,5 +65,18 @@ export class VarietyController {
   @ApiOperation({ summary: 'Delete a Variety' })
   public async delVariety(@Param('id') id: number) {
     return this.varietyService.delVariety(id);
+  }
+
+  @Get(':id/varieties')
+  async getVarieties(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<Variety[]> {
+    const vegetable = await this.varietyService.getVarietiesVegetable(id);
+
+    if (!vegetable) {
+      throw new NotFoundException(`Vegetable with ID ${id} not found`);
+    }
+
+    return vegetable;
   }
 }

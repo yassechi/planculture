@@ -7,10 +7,14 @@ import {
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
+  ParseIntPipe,
   Post,
   Put,
 } from '@nestjs/common';
+import { Vegetable } from 'src/entities/vegetable.entity';
+import { Variety } from 'src/entities/variety.entity';
 
 @Controller('vegetable')
 export class VegetableController {
@@ -69,4 +73,6 @@ export class VegetableController {
   async delVegetable(@Param('id') id: number) {
     return this.vegetableService.delVegetable(id);
   }
+
+
 }

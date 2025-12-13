@@ -17,7 +17,7 @@ export class Vegetable {
   id_vegetable: number;
 
   @Column()
-  variety_name: string;
+  variety_id: number;
 
   @Column()
   vegetable_name: string;
@@ -36,6 +36,9 @@ export class Vegetable {
 
   @Column()
   inrow_distance: number;
+
+  @Column()
+  in_row_spacing: number;
 
   @Column()
   estimated_yield: number;
