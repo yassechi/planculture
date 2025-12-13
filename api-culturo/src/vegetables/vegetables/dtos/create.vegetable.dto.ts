@@ -7,15 +7,10 @@ export class CreateVegetableDTO {
   @ApiProperty({ description: 'The name of vegetable ' })
   vegetable_name: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @ApiProperty({ description: 'The name of variety ' })
-  variety_name: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @ApiProperty({ description: 'The planting season' })
-  planting_season: string;
+  // @IsString()
+  // @IsNotEmpty()
+  // @ApiProperty({ description: 'The planting season' })
+  // planting_season: string;
 
   @IsString()
   @IsNotEmpty()
@@ -36,6 +31,11 @@ export class CreateVegetableDTO {
   @IsNotEmpty()
   @ApiProperty({ description: 'The in-row distance' })
   inrow_distance: number;
+
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiProperty({ description: 'The in-row spacing' })
+  in_row_spacing: number;
 
   @IsNumber()
   @IsNotEmpty()

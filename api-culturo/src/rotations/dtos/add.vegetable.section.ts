@@ -63,6 +63,13 @@ export class AddVegetableToBoardDto {
   @Type(() => Number)
   quantityPlanted?: number;
 
+  @ApiProperty({
+    description: 'unité',
+    example: 'kg',
+    type: String,
+  })
+  unity: string;
+
   @ApiPropertyOptional({
     description: 'Forcer la plantation en ignorant les règles de rotation',
     example: false,
