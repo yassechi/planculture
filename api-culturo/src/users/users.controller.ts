@@ -1,4 +1,8 @@
+// src/users/users.controller.ts
 import { CurrentUser } from './decorators/current-user.decorator';
+import { RequiertPermissions } from './decorators/permissions.decorator';
+
+import { PermissionsGuard } from './guards/permissions.guard';
 import { UpdateUserDTO } from './dtos/update.user.dto';
 import { RegisterDTO } from './dtos/register.user.dto';
 import type { JWTPayloadType } from 'src/utils/types';
@@ -25,6 +29,7 @@ import {
   ApiResponse,
   ApiSecurity,
 } from '@nestjs/swagger';
+import { Permission } from './permissions/permission.enum';
 
 @ApiTags('User Group')
 @Controller('users')
@@ -32,10 +37,12 @@ export class UsersController {
   constructor(private userService: UsersService) {}
 
   /**
-   *
-   * @returns
+   * Récupérer tous les utilisateurs - Uniquement FORMATEUR
    */
   @Get()
+  @UseGuards(AuthChard, PermissionsGuard)
+  @RequiertPermissions(Permission.ACCEDER_LISTE_UTILISATEURS)
+  @ApiSecurity('bearer')
   @ApiResponse({ status: 200, description: 'Users fetched successfully' })
   @ApiOperation({ summary: 'Get all users' })
   async getAllUsers() {
@@ -43,10 +50,12 @@ export class UsersController {
   }
 
   /**
-   *
-   * @returns
+   * Récupérer les utilisateurs actifs - Uniquement FORMATEUR
    */
   @Get('active')
+  @UseGuards(AuthChard, PermissionsGuard)
+  @RequiertPermissions(Permission.ACCEDER_LISTE_UTILISATEURS)
+  @ApiSecurity('bearer')
   @ApiResponse({
     status: 200,
     description: 'Users Active fetched successfully',
@@ -57,10 +66,12 @@ export class UsersController {
   }
 
   /**
-   *
-   * @returns
+   * Récupérer les utilisateurs inactifs - Uniquement FORMATEUR
    */
   @Get('inactive')
+  @UseGuards(AuthChard, PermissionsGuard)
+  @RequiertPermissions(Permission.ACCEDER_LISTE_UTILISATEURS)
+  @ApiSecurity('bearer')
   @ApiResponse({
     status: 200,
     description: 'Users Inactive fetched successfully',
@@ -71,36 +82,35 @@ export class UsersController {
   }
 
   /**
-   *
-   * @param id
-   * @returns
+   * Récupérer un utilisateur par ID - Authentifié uniquement
    */
   @Get('/:id')
+  @UseGuards(AuthChard)
+  @ApiSecurity('bearer')
   @ApiOperation({ summary: 'Get User by Id' })
-  async getOneUser(@Param('id') id: number) {
+  async getOneUser(@Param('id', ParseIntPipe) id: number) {
     return await this.userService.getUserById(id);
   }
 
   /**
-   *
-   * @param updateUserDto
-   * @returns
+   * Mettre à jour un utilisateur - Uniquement FORMATEUR
    */
   @Put()
+  @UseGuards(AuthChard, PermissionsGuard)
+  @RequiertPermissions(Permission.MODIFIER_UTILISATEUR_STAGIAIRE)
+  @ApiSecurity('bearer')
   @ApiOperation({ summary: 'Update User' })
   async updateUser(@Body() updateUserDto: UpdateUserDTO) {
-    console.log('tu es dans Update User');
-
     return await this.userService.updateUser(updateUserDto);
   }
 
   /**
-   *
-   * @param id
-   * @param status
-   * @returns
+   * Changer le statut d'un utilisateur - Uniquement FORMATEUR
    */
   @Patch('status/:id/:status')
+  @UseGuards(AuthChard, PermissionsGuard)
+  @RequiertPermissions(Permission.SUPPRIMER_UTILISATEUR)
+  @ApiSecurity('bearer')
   @ApiOperation({ summary: 'Disactivate User' })
   async setUserStatus(
     @Param('id', ParseIntPipe) id: number,
@@ -110,20 +120,19 @@ export class UsersController {
   }
 
   /**
-   *
-   * @param registerDto
-   * @returns
+   * Créer un nouvel utilisateur - Uniquement FORMATEUR
    */
   @Post('register')
+  // @UseGuards(AuthChard, PermissionsGuard)
+  // @RequiertPermissions(Permission.CREER_UTILISATEUR)
+  // @ApiSecurity('bearer')
   @ApiOperation({ summary: 'Register User' })
   public async registerUser(@Body() registerDto: RegisterDTO) {
     return await this.userService.register(registerDto);
   }
 
   /**
-   *
-   * @param loginDto
-   * @returns
+   * Connexion - Accessible à tous (pas de guard)
    */
   @Post('login')
   @ApiOperation({ summary: 'Login User' })
@@ -133,26 +142,15 @@ export class UsersController {
   }
 
   /**
-   *
-   * @param paylod
-   * @returns
+   * Récupérer l'utilisateur connecté - Authentifié uniquement
    */
   @ApiSecurity('bearer')
   @Post('current')
   @UseGuards(AuthChard)
   @ApiOperation({ summary: 'Get Current User (from token)' })
   public async getCurrentUser(
-    @CurrentUser() paylod: JWTPayloadType,
+    @CurrentUser() payload: JWTPayloadType,
   ): Promise<User_> {
-    return this.userService.getCurrentUser(paylod.id);
+    return this.userService.getCurrentUser(payload.id);
   }
-
-  // @ApiSecurity('bearer')
-  // @Post('current')
-  // @UseGuards(AuthChard)
-  // @ApiOperation({ summary: 'Get Current User (from token)' })
-  // public async getCurrentUser(@Req() request: any): Promise<User_> {
-  //   const id = request[CURRENT_USER].id;
-  //   return this.userService.getCurrentUser(id);
-  // }
 }

@@ -9,65 +9,76 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
-import { ApiOperation } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiSecurity,
+  ApiParam,
+  ApiBody,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { VarietyService } from './variety.service';
 import { CreateVarietyDTO } from './dtos/create.vartiety.dto';
 import { UpdateVarietyDTO } from './dtos/update.variety.dto';
 import { Variety } from 'src/entities/variety.entity';
+import { AuthChard } from 'src/users/guards/auth.guard';
+import { PermissionsGuard } from 'src/users/guards/permissions.guard';
+import { Permission } from 'src/users/permissions/permission.enum';
+import { RequiertPermissions } from 'src/users/decorators/permissions.decorator';
 
+
+@ApiTags('Varieties')
 @Controller('varieties')
 export class VarietyController {
   constructor(private readonly varietyService: VarietyService) {}
+
   /**
-   * GET /variety/:id
-   * Récupère une variety par ID
+   * Récupérer les variétés par ID de légume - Accessible aux utilisateurs authentifiés
+   */
+  @Get()
+  @UseGuards(AuthChard)
+  @ApiSecurity('bearer')
+  @ApiOperation({ summary: 'Récupère les variétés par ID de légume' })
+  @ApiQuery({ name: 'vegetable_id', type: Number, description: 'ID du légume' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Liste des variétés', type: [Variety] })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Non authentifié' })
+  public async getVarietyByVegetableId(
+    @Query('vegetable_id', ParseIntPipe) vegetableId: number,
+  ) {
+    return this.varietyService.geteAllVarietiesByVegetableId(vegetableId);
+  }
+
+  /**
+   * Récupérer une variété par ID - Accessible aux utilisateurs authentifiés
    */
   @Get(':id')
-  @ApiOperation({ summary: 'Get variety by Id' })
-  public async getvariety(@Param('id') id: number) {
+  @UseGuards(AuthChard)
+  @ApiSecurity('bearer')
+  @ApiOperation({ summary: 'Récupère une variété par son ID' })
+  @ApiParam({ name: 'id', type: Number, description: 'ID de la variété' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Variété trouvée', type: Variety })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Variété non trouvée' })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Non authentifié' })
+  public async getVariety(@Param('id', ParseIntPipe) id: number) {
     return this.varietyService.getVarietyById(id);
   }
 
-  @Get()
-  @ApiOperation({ summary: 'Get variety by Vegetable Id' })
-  public async getvarietyByVegetableId(
-    @Query('vegetable_id') vegtableId: number,
-  ) {
-    return this.varietyService.geteAllVarietiesByVegetableId(vegtableId);
-  }
-
-  // /**
-  //  * POST /variety
-  //  * Création d’une variété
-  //  */
-  // @Post()
-  // @ApiOperation({ summary: 'Create a variety' })
-  // public async createFamily(@Body() payload: CreateVarietyDTO) {
-  //   return this.varietyService.createvariety(payload);
-  // }
-
-  //   /**
-  //    * PUT /variety
-  //    * Mise à jour d’une variété
-  //    */
-  @Put()
-  @ApiOperation({ summary: 'Update a Variety' })
-  public async updateVariety(@Body() payload: UpdateVarietyDTO) {
-    return this.varietyService.updateVariety(payload);
-  }
-
-  //   /**
-  //    * DELETE /variety/:id
-  //    * Suppression d’une variété
-  //    */
-  @Delete(':id')
-  @ApiOperation({ summary: 'Delete a Variety' })
-  public async delVariety(@Param('id') id: number) {
-    return this.varietyService.delVariety(id);
-  }
-
+  /**
+   * Récupérer les variétés d'un légume - Accessible aux utilisateurs authentifiés
+   */
   @Get(':id/varieties')
+  @UseGuards(AuthChard)
+  @ApiSecurity('bearer')
+  @ApiOperation({ summary: 'Récupère toutes les variétés d\'un légume' })
+  @ApiParam({ name: 'id', type: Number, description: 'ID du légume' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Liste des variétés du légume', type: [Variety] })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Légume non trouvé' })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Non authentifié' })
   async getVarieties(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<Variety[]> {
@@ -78,5 +89,56 @@ export class VarietyController {
     }
 
     return vegetable;
+  }
+
+  /**
+   * Créer une variété - FORMATEUR uniquement
+   */
+  @Post()
+  @UseGuards(AuthChard, PermissionsGuard)
+  @RequiertPermissions(Permission.CREER_VARIETE_LEGUME)
+  @ApiSecurity('bearer')
+  @ApiOperation({ summary: 'Crée une nouvelle variété de légume' })
+  @ApiBody({ type: CreateVarietyDTO })
+  @ApiResponse({ status: HttpStatus.CREATED, description: 'Variété créée', type: Variety })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Non authentifié' })
+  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Permission refusée - Réservé aux formateurs' })
+  public async createVariety(@Body() payload: CreateVarietyDTO) {
+    return this.varietyService.createvariety(payload);
+  }
+
+  /**
+   * Mettre à jour une variété - FORMATEUR uniquement
+   */
+  @Put()
+  @UseGuards(AuthChard, PermissionsGuard)
+  @RequiertPermissions(Permission.MODIFIER_SUPPRIMER_VARIETE_LEGUME)
+  @ApiSecurity('bearer')
+  @ApiOperation({ summary: 'Met à jour une variété de légume' })
+  @ApiBody({ type: UpdateVarietyDTO })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Variété mise à jour', type: Variety })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Variété non trouvée' })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Non authentifié' })
+  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Permission refusée - Réservé aux formateurs' })
+  public async updateVariety(@Body() payload: UpdateVarietyDTO) {
+    return this.varietyService.updateVariety(payload);
+  }
+
+  /**
+   * Supprimer une variété - FORMATEUR uniquement
+   */
+  @Delete(':id')
+  @UseGuards(AuthChard, PermissionsGuard)
+  @RequiertPermissions(Permission.MODIFIER_SUPPRIMER_VARIETE_LEGUME)
+  @ApiSecurity('bearer')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Supprime une variété de légume' })
+  @ApiParam({ name: 'id', type: Number, description: 'ID de la variété à supprimer' })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Variété supprimée' })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Variété non trouvée' })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Non authentifié' })
+  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Permission refusée - Réservé aux formateurs' })
+  public async delVariety(@Param('id', ParseIntPipe) id: number) {
+    return this.varietyService.delVariety(id);
   }
 }

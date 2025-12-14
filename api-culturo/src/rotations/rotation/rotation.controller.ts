@@ -13,6 +13,7 @@ import {
   NotFoundException,
   InternalServerErrorException,
   HttpCode,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -21,12 +22,12 @@ import {
   ApiQuery,
   ApiBody,
   ApiResponse,
+  ApiSecurity,
 } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RotationService } from './rotation.service';
 import { Vegetable } from 'src/entities/vegetable.entity';
-// Assurez-vous que ces DTOs existent à ces chemins
 import { PlantingValidationDto } from '../dtos/planting.validation.dto';
 import { CulturePlanQueryDto } from '../dtos/culture.plan.query.dto';
 import { PlantableVegetableDto } from '../dtos/plantable.vegetable.dro';
@@ -34,6 +35,7 @@ import { AddVegetableToBoardDto } from '../dtos/add.vegetable.section';
 import { PlantingSuccessResponse } from '../dtos/planting.succes.warning.dto';
 import { Section } from 'src/entities/section.entity';
 import { SectionPlan } from 'src/entities/section_plan.entity';
+import { AuthChard } from 'src/users/guards/auth.guard';
 
 /**
  * Définit la structure de la réponse du service après une tentative de plantation.
@@ -59,10 +61,14 @@ export interface PlanResult {
 export class RotationController {
   constructor(private readonly rotationService: RotationService) {}
 
-  // ----------------- getCulturePlan -----------------
+  /**
+   * Obtenir le plan de culture - Accessible aux utilisateurs authentifiés
+   */
   @Get('plan/:soleId')
+  @UseGuards(AuthChard)
+  @ApiSecurity('bearer')
   @ApiOperation({
-    summary: 'Obtenir le plan de culture pour une Sole sur une période donnée.',
+    summary: 'Obtient le plan de culture pour une Sole sur une période donnée',
   })
   @ApiParam({
     name: 'soleId',
@@ -74,9 +80,13 @@ export class RotationController {
   @ApiQuery({ name: 'month', type: Number, required: false, example: 3 })
   @ApiQuery({ name: 'periodMonths', type: Number, required: false, example: 6 })
   @ApiResponse({
-    status: 200,
-    description: 'Plan de culture retourné avec succès.',
+    status: HttpStatus.OK,
+    description: 'Plan de culture retourné avec succès',
     type: Object,
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Non authentifié',
   })
   async getCulturePlan(
     @Param('soleId', ParseIntPipe) soleId: number,
@@ -91,44 +101,29 @@ export class RotationController {
     );
   }
 
-  // ----------------- canPlantVegetable -----------------
+  /**
+   * Vérifier si un légume peut être planté - Accessible aux utilisateurs authentifiés
+   */
   @Post('can')
+  @UseGuards(AuthChard)
+  @ApiSecurity('bearer')
   @ApiOperation({
-    summary: 'Vérifie si un légume peut être planté sur une planche.',
+    summary: 'Vérifie si un légume peut être planté sur une planche',
     description:
-      'Vérifie les règles de rotation (5 ans) et de cohabitation (famille primaire unique) pour déterminer si un légume peut être planté sur une planche donnée.',
+      'Vérifie les règles de rotation (5 ans) et de cohabitation (famille primaire unique)',
   })
   @ApiBody({
     type: PlantingValidationDto,
     description:
-      "Contient l'ID de la planche, l'ID du légume, et un drapeau pour contourner les règles (bypass).",
-    examples: {
-      check: {
-        value: { boardId: 1, vegetableId: 10, bypass: false },
-        summary: 'Vérification simple',
-      },
-    },
+      "Contient l'ID de la planche, l'ID du légume, et un drapeau pour contourner les règles (bypass)",
   })
   @ApiResponse({
-    status: 200,
-    description: 'Plantation autorisée (Statut: OK).',
-    schema: { example: { status: 'OK' } },
+    status: HttpStatus.OK,
+    description: 'Plantation autorisée (Statut: OK)',
   })
   @ApiResponse({
-    status: 200,
-    description:
-      'Plantation non autorisée, mais possible avec contournement (Statut: WARNING).',
-    schema: {
-      example: {
-        status: 'WARNING',
-        reason: 'Règle violée.',
-        neededBypass: true,
-      },
-    },
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Ressource non trouvée (Planche ou Légume).',
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Non authentifié',
   })
   async canPlantVegetable(@Body() body: PlantingValidationDto) {
     return this.rotationService.canPlantVegetable(
@@ -138,12 +133,14 @@ export class RotationController {
     );
   }
 
-  // ----------------- findPlantableSections -----------------
+  /**
+   * Trouver les sections plantables - Accessible aux utilisateurs authentifiés
+   */
   @Get('plantable-sections')
+  @UseGuards(AuthChard)
+  @ApiSecurity('bearer')
   @ApiOperation({
-    summary: 'Trouve toutes les sections plantables pour un légume donné.',
-    description:
-      'Retourne les sections disponibles qui respectent les règles de rotation et ne sont pas occupées durant la période spécifiée.',
+    summary: 'Trouve toutes les sections plantables pour un légume donné',
   })
   @ApiQuery({ name: 'vegetableId', type: Number, required: true, example: 21 })
   @ApiQuery({
@@ -159,9 +156,12 @@ export class RotationController {
     example: '2025-07-31',
   })
   @ApiResponse({
-    status: 200,
-    description: 'Liste des sections disponibles pour la plantation.',
-    type: Object,
+    status: HttpStatus.OK,
+    description: 'Liste des sections disponibles pour la plantation',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Non authentifié',
   })
   async findPlantableSections(
     @Query('vegetableId', ParseIntPipe) vegetableId: number,
@@ -171,26 +171,32 @@ export class RotationController {
     const start = new Date(startDate);
     const end = new Date(endDate);
     if (isNaN(start.getTime()) || isNaN(end.getTime()) || start > end) {
-      throw new BadRequestException('Dates invalides ou incohérentes.');
+      throw new BadRequestException('Dates invalides ou incohérentes');
     }
     return this.rotationService.findPlantableSections(vegetableId, start, end);
   }
 
-  // ----------------- findPlantableVegetables -----------------
+  /**
+   * Trouver les légumes plantables - Accessible aux utilisateurs authentifiés
+   */
   @Get('plantable-vegetables')
+  @UseGuards(AuthChard)
+  @ApiSecurity('bearer')
   @ApiOperation({
-    summary: 'Récupérer les légumes plantables dans une section spécifique.',
-    description:
-      "Liste tous les légumes qui peuvent être plantés dans la section spécifiée, compte tenu des contraintes de rotation et d'occupation.",
+    summary: 'Récupère les légumes plantables dans une section spécifique',
   })
   @ApiQuery({ name: 'sectionPlanId', type: Number, example: 3 })
   @ApiQuery({ name: 'sectionNumber', type: Number, example: 2 })
   @ApiQuery({ name: 'startDate', type: String, example: '2024-03-15' })
   @ApiQuery({ name: 'endDate', type: String, example: '2024-09-30' })
   @ApiResponse({
-    status: 200,
-    description: 'Liste des légumes plantables.',
+    status: HttpStatus.OK,
+    description: 'Liste des légumes plantables',
     type: [PlantableVegetableDto],
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Non authentifié',
   })
   async findPlantableVegetables(
     @Query('sectionPlanId', ParseIntPipe) sectionPlanId: number,
@@ -201,7 +207,7 @@ export class RotationController {
     const start = new Date(startDateStr);
     const end = new Date(endDateStr);
     if (isNaN(start.getTime()) || isNaN(end.getTime()) || start >= end) {
-      throw new BadRequestException('Dates invalides ou incohérentes.');
+      throw new BadRequestException('Dates invalides ou incohérentes');
     }
     return this.rotationService.findPlantableVegetables(
       sectionPlanId,
@@ -211,41 +217,35 @@ export class RotationController {
     );
   }
 
-  // ----------------- createSectionPlan -----------------
+  /**
+   * Créer un plan de section - Accessible aux utilisateurs authentifiés
+   */
   @Post('plan-section')
-  @HttpCode(200)
+  @UseGuards(AuthChard)
+  @ApiSecurity('bearer')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary:
-      'Crée un nouveau SectionPlan pour une planche ou active/retourne un plan existant.',
+      'Crée un nouveau SectionPlan pour une planche ou active/retourne un plan existant',
   })
   @ApiQuery({
     name: 'boardId',
     type: Number,
     required: true,
-    description:
-      'ID de la planche à laquelle le plan de section doit être associé.',
   })
   @ApiQuery({
     name: 'numberOfSections',
     type: Number,
     required: false,
     example: 3,
-    description:
-      "Nombre de sections à créer si aucun plan actif n'est trouvé (par défaut: 3).",
   })
   @ApiResponse({
-    status: 200,
-    description:
-      'Plan de section trouvé ou créé avec succès (Statut: FOUND ou CREATED).',
-    type: Object,
+    status: HttpStatus.OK,
+    description: 'Plan de section trouvé ou créé avec succès',
   })
   @ApiResponse({
-    status: 400,
-    description: 'Requête invalide (nombre de sections <= 0).',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Planche non trouvée.',
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Non authentifié',
   })
   async createSectionPlan(
     @Query('boardId', ParseIntPipe) boardId: number,
@@ -257,7 +257,7 @@ export class RotationController {
 
       if (numberOfSections <= 0) {
         throw new BadRequestException(
-          'Le paramètre numberOfSections doit être un nombre entier positif.',
+          'Le paramètre numberOfSections doit être un nombre entier positif',
         );
       }
 
@@ -276,42 +276,37 @@ export class RotationController {
         throw error;
       }
       throw new InternalServerErrorException(
-        'Erreur interne lors de la gestion du plan de section.',
+        'Erreur interne lors de la gestion du plan de section',
       );
     }
   }
 
-  // ----------------- addVegetableToBoard -----------------
+  /**
+   * Ajouter un légume à une planche - Accessible aux utilisateurs authentifiés
+   */
   @Post('add-vegetable')
+  @UseGuards(AuthChard)
+  @ApiSecurity('bearer')
   @ApiOperation({
-    summary: 'Ajouter un légume (avec variété) à une section de planche.',
+    summary: 'Ajoute un légume (avec variété) à une section de planche',
   })
   @ApiQuery({
     name: 'numberOfSection',
     type: Number,
     required: false,
     example: 3,
-    description:
-      "Nombre de sections à créer si aucun plan n'existe pour la planche (par défaut: 3).",
   })
   @ApiBody({
     type: AddVegetableToBoardDto,
-    description:
-      'Données nécessaires à la plantation (boardId, vegetableId, sectionNumber, dates, etc.).',
   })
   @ApiResponse({
-    status: 201,
-    description: 'Section créée avec succès (Status: OK).',
+    status: HttpStatus.CREATED,
+    description: 'Section créée avec succès',
     type: PlantingSuccessResponse,
   })
   @ApiResponse({
-    status: 400,
-    description:
-      'Requête invalide (Section déjà active, ou violation des règles de rotation nécessitant un contournement).',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Ressource non trouvée.',
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Non authentifié',
   })
   async addVegetableToBoard(
     @Body() dto: AddVegetableToBoardDto,
@@ -351,7 +346,7 @@ export class RotationController {
           statusCode: HttpStatus.BAD_REQUEST,
           message:
             result.reason ||
-            'Violation des règles de rotation. Contournement requis.',
+            'Violation des règles de rotation. Contournement requis',
           warningDetails: result,
         });
       }
@@ -376,7 +371,7 @@ export class RotationController {
         error,
       );
       throw new InternalServerErrorException(
-        'Une erreur interne est survenue lors de la création de la section.',
+        'Une erreur interne est survenue lors de la création de la section',
       );
     }
   }
