@@ -1,24 +1,22 @@
-import { IsDate, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+// src/amendement/dtos/create.amendement.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsDateString, IsOptional, IsNumber } from 'class-validator';
 
 export class CreateAmendementDTO {
-  @IsDate()
-  @IsNotEmpty()
-  @ApiProperty({ description: 'Date of amendement ' })
-  amendment_date: Date;
-
-  @IsNumber()
-  @IsNotEmpty()
-  @ApiProperty({ description: 'Board amended' })
-  id_board: string;
-
+  @ApiProperty({ example: 'Ajout de compost' })
   @IsString()
-  @IsNotEmpty()
-  @ApiProperty({ description: 'Title of amendement ' })
   title: string;
 
+  @ApiProperty({ example: 'Amendement organique pour le sol' })
   @IsString()
-  @IsNotEmpty()
-  @ApiProperty({ description: 'Description amendement ' })
   description: string;
+
+  @ApiProperty({ example: '2025-12-14T00:00:00.000Z' })
+  @IsDateString()
+  amendment_date: Date;
+
+  @ApiProperty({ example: 1, required: false })
+  @IsOptional()
+  @IsNumber()
+  id_board?: number;
 }

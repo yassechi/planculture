@@ -23,7 +23,7 @@ export class UsersService {
     private readonly userRepository: Repository<User_>,
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>,
-    private readonly jwtService: JwtService, 
+    private readonly jwtService: JwtService,
     private readonly emailService: EmailService,
   ) {}
 
@@ -106,7 +106,7 @@ export class UsersService {
       }
 
       user.role = role;
-      user.id_role = updateData.id_role; 
+      user.id_role = updateData.id_role;
     }
 
     // --- Mot de passe ---
@@ -140,9 +140,9 @@ export class UsersService {
   }
 
   /**
-   * 
-   * @param registerDto 
-   * @returns 
+   *
+   * @param registerDto
+   * @returns
    */
   public async register(registerDto: RegisterDTO) {
     const { email, hpassword, id_role } = registerDto;
@@ -170,7 +170,7 @@ export class UsersService {
 
     const savedUser = await this.userRepository.save(newUser);
 
-    //  Envoi de l'email de bienvenue
+    // Envoi de l'email de bienvenue
     try {
       await this.emailService.sendWelcomeEmail(
         savedUser.email,
@@ -179,14 +179,16 @@ export class UsersService {
       );
     } catch (error) {
       console.error('Erreur envoi email:', error);
-      // On ne bloque pas l'inscription si l'email échoue
     }
 
-    // JWT Payload
+    // JWT Payload - AJOUT DU ROLE
     const payload: JWTPayloadType = {
       id: savedUser.id_user,
       email: savedUser.email,
+      role: roleFromDb.role_name, // AJOUTÉ
       id_role: savedUser.id_role,
+      nom: savedUser.user_last_name,
+      prenom: savedUser.user_first_name,
     };
 
     const accessToken = await this.jwtService.signAsync(payload);
@@ -194,31 +196,47 @@ export class UsersService {
     return { id: savedUser.id_user, accessToken };
   }
 
-
   /**
- * Login In user
- * @param loginDTo data for log in to user account
- * @returns JWT (acces token)
- */
-public async login(loginDTo: LoginDTO) {
-  const { email, hpassword } = loginDTo;
-  const userFromDb = await this.userRepository.findOne({ where: { email } });
-  
-  if (!userFromDb) throw new BadRequestException('unregistered user');
+   * Login In user
+   * @param loginDTo data for log in to user account
+   * @returns JWT (acces token)
+   */
+  public async login(loginDto: LoginDTO) {
+    const { email, hpassword } = loginDto;
 
-  // Vérification du mot de passe 
-  const isPassMatch = await bcrypt.compare(hpassword.trim(), userFromDb.hpassword);
-  if (!isPassMatch) throw new BadRequestException('invalid password');
+    // IMPORTANT : Charger la relation 'role'
+    const userFromDb = await this.userRepository.findOne({
+      where: { email },
+      relations: ['role'], // AJOUTÉ
+    });
 
-  const payload: JWTPayloadType = {
-    id: userFromDb.id_user,
-    email: userFromDb.email,
-    id_role: userFromDb.id_role,
-  };
-  
-  const accessToken = await this.jwtService.signAsync(payload);
-  return { id: userFromDb.id_user, accessToken };
-}
+    if (!userFromDb) throw new BadRequestException('unregistered user');
+
+    // Vérification du mot de passe
+    const isPassMatch = await bcrypt.compare(
+      hpassword.trim(),
+      userFromDb.hpassword,
+    );
+    if (!isPassMatch) throw new BadRequestException('invalid password');
+
+    // JWT Payload - AJOUT DU ROLE
+    const payload: JWTPayloadType = {
+      id: userFromDb.id_user,
+      email: userFromDb.email,
+      role: userFromDb.role.role_name, // AJOUTÉ
+      id_role: userFromDb.id_role,
+      nom: userFromDb.user_last_name,
+      prenom: userFromDb.user_first_name,
+    };
+
+    const accessToken = await this.jwtService.signAsync(payload);
+
+    return {
+      id: userFromDb.id_user,
+      accessToken,
+      role: userFromDb.role.role_name, // Optionnel : retourner le rôle
+    };
+  }
 
   /**
    * Get Current user connected (Logged)

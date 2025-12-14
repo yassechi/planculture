@@ -1,14 +1,14 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+// src/variety/dtos/update.variety.dto.ts
+import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { IsNotEmpty, IsNumber } from 'class-validator';
+import { CreateVarietyDTO } from './create.vartiety.dto';
 
-export class UpdateVarietyDTO {
-  @IsString()
-  @IsNotEmpty()
-  @ApiProperty({ description: 'The name of Variety ' })
-  variety_name: string;
-
-  @IsNumber()
-  @IsNotEmpty()
-  @ApiProperty({ description: 'The id of variety' })
+export class UpdateVarietyDTO extends PartialType(CreateVarietyDTO) {
+  @ApiProperty({
+    description: 'ID de la variété à mettre à jour',
+    example: 1,
+  })
+  @IsNotEmpty({ message: 'L\'ID de la variété est obligatoire' })
+  @IsNumber({}, { message: 'L\'ID doit être un nombre' })
   id_variety: number;
 }

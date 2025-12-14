@@ -1,3 +1,4 @@
+// src/entities/amended.entity.ts
 import { Board } from 'src/entities/board.entity';
 import {
   Column,
@@ -22,11 +23,11 @@ export class Amended {
   @Column({ type: 'text', nullable: true })
   description: string;
 
-  @ManyToOne(() => Board, (board) => board.amendeds, { eager: true })
+  @ManyToOne(() => Board, (board) => board.amendeds, { eager: true, nullable: true }) // Ajout de nullable: true
   @JoinColumn({ name: 'id_board' })
-  board: Board;
+  board: Board | null; // Changement ici
 
-  @ManyToOne(() => Amendement, (amendement) => amendement.amendeds)
+  @ManyToOne(() => Amendement, (amendement) => amendement.amendeds, { nullable: true }) // Ajout de nullable: true
   @JoinColumn({ name: 'amendement_id' })
-  amendement: Amendement;
+  amendement: Amendement | null; // Changement ici
 }

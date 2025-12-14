@@ -15,8 +15,11 @@ export class VarietyService {
     @InjectRepository(Vegetable)
     private readonly vegetableRepository: Repository<Vegetable>,
   ) {}
-  //Récupération des variétées
-  async geteAllVarietiesByVegetableId(vegetableId: number) {
+
+  /**
+   * Récupère toutes les variétés d'un légume par son ID
+   */
+  async geteAllVarietiesByVegetableId(vegetableId: number): Promise<Variety[]> {
     return this.varietyRepository.find({
       where: {
         vegetable: {
@@ -27,86 +30,120 @@ export class VarietyService {
     });
   }
 
-  async getVarietyById(id: number) {
-    return this.varietyRepository.find({
+  /**
+   * Récupère une variété par son ID
+   * CORRECTION: Utilise findOne au lieu de find
+   */
+  async getVarietyById(id: number): Promise<Variety> {
+    const variety = await this.varietyRepository.findOne({
       where: { id_variety: id },
       relations: ['vegetable'],
     });
+
+    if (!variety) {
+      throw new NotFoundException(`Variety with ID ${id} not found`);
+    }
+
+    return variety;
   }
 
-  // Création d'une variété
-  // async createvariety(payload: CreateVarietyDTO) {
-  //   // Vérifier si le legume existe
-  //   const vegetable = await this.vegetableRepository.findOne({
-  //     where: { id_vegetable: payload.id_vegetable },
-  //   });
+  /**
+   * Création d'une variété
+   */
+  async createvariety(payload: CreateVarietyDTO): Promise<Variety> {
+    // Vérifier si le légume existe
+    const vegetable = await this.vegetableRepository.findOne({
+      where: { id_vegetable: payload.id_vegetable },
+    });
 
-  //   if (!vegetable) {
-  //     throw new NotFoundException('Vegetable not found'); // Stop Function
-  //   }
+    if (!vegetable) {
+      throw new NotFoundException(
+        `Vegetable with ID ${payload.id_vegetable} not found`,
+      );
+    }
 
-  //   // Créer la variété avec son nom
-  //   const variety = this.varietyRepository.create({
-  //     ...payload,
-  //     vegetable,
-  //   });
+    // Créer la variété avec son nom
+    const variety = this.varietyRepository.create({
+      variety_name: payload.variety_name,
+      vegetable,
+    });
 
-  //   return this.varietyRepository.save(variety);
-  // }
+    return this.varietyRepository.save(variety);
+  }
 
-  //   // si tu veux récupérer la relation existante
-  async updateVariety(payload: UpdateVarietyDTO) {
-    // 1. Trouver la variété
+  /**
+   * Mise à jour d'une variété
+   */
+  async updateVariety(payload: UpdateVarietyDTO): Promise<Variety> {
+    // Trouver la variété
     const variety = await this.varietyRepository.findOne({
       where: { id_variety: payload.id_variety },
       relations: ['vegetable'],
     });
 
     if (!variety) {
-      throw new NotFoundException('Variety not found');
+      throw new NotFoundException(
+        `Variety with ID ${payload.id_variety} not found`,
+      );
     }
 
-    // 2. Mettre à jour uniquement les champs autorisés
-    variety.variety_name = payload.variety_name;
+    // Mettre à jour le nom si fourni
+    if (payload.variety_name) {
+      variety.variety_name = payload.variety_name;
+    }
 
-    // 4. Sauvegarder
+    // Si un nouveau légume est spécifié
+    if (payload.id_vegetable && payload.id_vegetable !== variety.vegetable.id_vegetable) {
+      const newVegetable = await this.vegetableRepository.findOne({
+        where: { id_vegetable: payload.id_vegetable },
+      });
+
+      if (!newVegetable) {
+        throw new NotFoundException(
+          `Vegetable with ID ${payload.id_vegetable} not found`,
+        );
+      }
+
+      variety.vegetable = newVegetable;
+    }
+
+    // Sauvegarder
     return this.varietyRepository.save(variety);
   }
 
   /**
-   * Suppression d’une famille
+   * Suppression d'une variété
    */
-  async delVariety(id: number): Promise<{ msg: string }> {
+  async delVariety(id: number): Promise<void> {
     const variety = await this.varietyRepository.findOne({
       where: { id_variety: id },
     });
 
     if (!variety) {
-      throw new NotFoundException('Variété introuvable');
+      throw new NotFoundException(`Variety with ID ${id} not found`);
     }
 
     await this.varietyRepository.delete({ id_variety: id });
-
-    return { msg: 'Variété supprimée avec succès' };
   }
 
-  async getVarietiesVegetable(id: string | number): Promise<Variety[]> {
-    // Convertit l'id en nombre si nécessaire
-    const vegetableId = typeof id === 'string' ? parseInt(id, 10) : id;
-
-    if (isNaN(vegetableId)) {
-      throw new Error(`Invalid vegetable ID: ${id}`);
+  /**
+   * Récupère toutes les variétés d'un légume
+   */
+  async getVarietiesVegetable(id: number): Promise<Variety[]> {
+    // Vérifier que l'ID est valide
+    if (!id || isNaN(id)) {
+      throw new NotFoundException(`Invalid vegetable ID: ${id}`);
     }
 
-    const veg = await this.vegetableRepository.findOne({
-      where: { id_vegetable: vegetableId },
+    const vegetable = await this.vegetableRepository.findOne({
+      where: { id_vegetable: id },
       relations: ['varieties'],
     });
 
-    if (!veg) {
-      throw new NotFoundException(`Vegetable with ID ${vegetableId} not found`);
+    if (!vegetable) {
+      throw new NotFoundException(`Vegetable with ID ${id} not found`);
     }
 
-    return veg.varieties;
+    return vegetable.varieties;
   }
 }

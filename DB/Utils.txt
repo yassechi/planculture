@@ -97,3 +97,6 @@ drop database culturo;
 create database culturo;
 \c culturo;
 \d
+
+-- Hash for "123456" 
+$2b$10$Xm4X5/K5RIi5PpMLN6jnwenQDDz77mFAar4nhbgIaqxvQERtVtEgu
