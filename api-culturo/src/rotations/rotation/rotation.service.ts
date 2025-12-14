@@ -62,7 +62,12 @@ export class RotationService {
   ) {}
 
   /**
-   * Récupère le plan de culture pour une sole et une période données.
+   *
+   * @param soleId
+   * @param year
+   * @param month
+   * @param periodMonths
+   * @returns
    */
   async getCulturePlan(
     soleId: number,
@@ -112,13 +117,13 @@ export class RotationService {
     }));
   }
 
- /**
-  * 
-  * @param boardId 
-  * @param vegetableId 
-  * @param bypass 
-  * @returns 
-  */
+  /**
+   *
+   * @param boardId
+   * @param vegetableId
+   * @param bypass
+   * @returns
+   */
   async canPlantVegetable(
     boardId: number,
     vegetableId: number,
@@ -524,13 +529,13 @@ export class RotationService {
   ): Promise<PlanResult> {
     let existingPlan = await this.sectionPlanRepository.findOne({
       where: { board: { id_board: boardId }, section_plan_active: true },
-      relations: [
-        'board',
-        'sections',
-        'sections.vegetable',
-        'sections.vegetable.family',
-        'sections.vegetable.family.family_importance',
-      ],
+      // relations: [
+      //   'board',
+      //   'sections',
+      //   'sections.vegetable',
+      //   'sections.vegetable.family',
+      //   'sections.vegetable.family.family_importance',
+      // ],
     });
 
     // CAS 1: Le plan existe.
@@ -575,7 +580,21 @@ export class RotationService {
     return { sectionPlan: planWithRelations, status: 'CREATED' };
   }
 
-  // SectionService.ts
+  /**
+   *
+   * @param boardId
+   * @param sectionNumber
+   * @param vegetableId
+   * @param startDate
+   * @param endDate
+   * @param quantityPlanted
+   * @param bypass
+   * @param unity
+   * @param varietyIdentifier
+   * @param numberOfSection
+   * @returns
+   */
+  // RotationService.ts
 
   async addVegetableToBoard(
     boardId: number,
@@ -586,10 +605,11 @@ export class RotationService {
     quantityPlanted: number = 0,
     bypass: boolean = false,
     unity: string,
-    varietyIdentifier: string | number, // PARAMÈTRE MAINTENANT UTILISÉ
+    varietyIdentifier: string | number,
+    numberOfSection: number, // PARAMÈTRE RÉINTRODUIT ET UTILISÉ
   ): Promise<PlantingResult> {
     try {
-      // 1. Vérification du Légume
+      // 1. Vérification du Légume et Gestion de la variété (INCHANGÉ)
       const vegetable = await this.vegetableRepository.findOne({
         where: { id_vegetable: vegetableId },
         relations: ['family', 'family.family_importance', 'varieties'],
@@ -602,11 +622,9 @@ export class RotationService {
       let varietyIdFK: number | null = null;
       let variety: Variety | null = null;
 
-      // --------------------------------------------------------------------------
-      // 2. GESTION DE LA VARIÉTÉ (Utilisation de varietyIdentifier)
-      // --------------------------------------------------------------------------
+      // ... (Logique de gestion de la variété identique) ...
       if (typeof varietyIdentifier === 'number') {
-        // Cas 1: varietyIdentifier est l'ID d'une variété existante
+        // ID
         variety = await this.varietyRepository.findOne({
           where: { id_variety: varietyIdentifier },
           relations: ['vegetable'],
@@ -619,12 +637,11 @@ export class RotationService {
         }
         varietyIdFK = variety.id_variety;
       } else if (
+        // String
         typeof varietyIdentifier === 'string' &&
         varietyIdentifier.trim() !== ''
       ) {
-        // Cas 2: varietyIdentifier est le nom d'une variété (création si non trouvée)
         const varietyName = varietyIdentifier.trim();
-
         variety = await this.varietyRepository.findOne({
           where: {
             variety_name: varietyName,
@@ -644,8 +661,12 @@ export class RotationService {
         varietyIdFK = variety.id_variety;
       }
 
-      // Cretae Section_Plan
-      const SECTIONS_FOR_CREATION = 4;
+      // --------------------------------------------------------------------------
+      // 2. Création/Activation du Section_Plan
+      // --------------------------------------------------------------------------
+
+      // Utilisation du paramètre d'entrée pour l'initialisation du plan
+      const SECTIONS_FOR_CREATION = numberOfSection;
 
       const planResult = await this.createOrActivatePlan(
         boardId,
@@ -653,8 +674,9 @@ export class RotationService {
       );
 
       const currentSectionPlan = planResult.sectionPlan;
+      // --------------------------------------------------------------------------
 
-      // Validité de la section
+      // 3. Validité de la section (INCHANGÉ)
       if (
         sectionNumber < 1 ||
         sectionNumber > currentSectionPlan.number_of_section
@@ -664,7 +686,7 @@ export class RotationService {
         );
       }
 
-      // Occupation de la section
+      // 4. Occupation de la section (INCHANGÉ)
       const existingActiveSection = await this.sectionRepository.findOne({
         where: {
           sectionPlan: { id_section_plan: currentSectionPlan.id_section_plan },
@@ -679,7 +701,7 @@ export class RotationService {
         );
       }
 
-      // Vérification de la rotation/compatibilité
+      // 5. Vérification de la rotation/compatibilité (INCHANGÉ)
       const plantableVegetables = await this.findPlantableVegetables(
         currentSectionPlan.id_section_plan,
         sectionNumber,
@@ -707,12 +729,12 @@ export class RotationService {
         }
       }
 
-      // Créer la section 
+      // 6. Créer la section (INCHANGÉ)
       const newSection = this.sectionRepository.create({
         sectionPlan: currentSectionPlan,
         section_number: sectionNumber,
         id_vegetable_fk: vegetableIdFK,
-        id_variety_fk: varietyIdFK, 
+        id_variety_fk: varietyIdFK,
         start_date: startDate,
         end_date: endDate,
         quantity_planted: quantityPlanted,
@@ -724,7 +746,7 @@ export class RotationService {
         newSection,
       )) as unknown as Section;
 
-      // Retourner le résultat 
+      // 7. Retourner le résultat (INCHANGÉ)
       const sectionWithRelations = await this.sectionRepository.findOne({
         where: { id_section: savedSection.id_section },
         relations: [

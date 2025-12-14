@@ -23,8 +23,7 @@ export class UsersService {
     private readonly userRepository: Repository<User_>,
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>,
-    private readonly config: ConfigService,
-    private readonly jwtService: JwtService, // Problem ENV
+    private readonly jwtService: JwtService, 
     private readonly emailService: EmailService,
   ) {}
 
@@ -107,7 +106,7 @@ export class UsersService {
       }
 
       user.role = role;
-      user.id_role = updateData.id_role; // IMPORTANT !
+      user.id_role = updateData.id_role; 
     }
 
     // --- Mot de passe ---
@@ -140,6 +139,11 @@ export class UsersService {
     return { status: 200, msg: 'Utilisateur mis à jour avec succès' };
   }
 
+  /**
+   * 
+   * @param registerDto 
+   * @returns 
+   */
   public async register(registerDto: RegisterDTO) {
     const { email, hpassword, id_role } = registerDto;
 
@@ -166,7 +170,7 @@ export class UsersService {
 
     const savedUser = await this.userRepository.save(newUser);
 
-    // 🎯 Envoi de l'email de bienvenue
+    //  Envoi de l'email de bienvenue
     try {
       await this.emailService.sendWelcomeEmail(
         savedUser.email,
@@ -202,7 +206,7 @@ public async login(loginDTo: LoginDTO) {
   
   if (!userFromDb) throw new BadRequestException('unregistered user');
 
-  // ✅ Vérification du mot de passe (décommenté)
+  // Vérification du mot de passe 
   const isPassMatch = await bcrypt.compare(hpassword.trim(), userFromDb.hpassword);
   if (!isPassMatch) throw new BadRequestException('invalid password');
 
