@@ -23,7 +23,7 @@ export class VegetableService {
   /** Récupère tous les légumes avec familles et variétés */
   async getAllVegetables() {
     return this.vegetableRepository.find({
-      relations: ['family', 'varieties'],
+      relations: ['family', 'varieties', 'family.family_importance'],
     });
   }
 
@@ -31,7 +31,7 @@ export class VegetableService {
   async getVegetableById(id: number) {
     const vegetable = await this.vegetableRepository.findOne({
       where: { id_vegetable: id },
-      relations: ['family', 'varieties'],
+      relations: ['family', 'varieties', 'family.family_importance'],
     });
 
     if (!vegetable) throw new NotFoundException('Vegetable not found');
