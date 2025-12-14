@@ -82,3 +82,18 @@ npx typeorm schema:log -d ./dist/data-source.js > schema.sql
 Le chemin -d ./dist/data-source.js doit pointer vers le JS compilé, pas TS.
 
 synchronize doit être à false dans le DataSource pour que TypeORM génère le SQL au lieu de modifier la base.
+
+
+-- Pour passer toutes les section fini en false 
+UPDATE section
+SET section_active = FALSE
+WHERE section_active = TRUE
+  AND end_date < CURRENT_DATE;
+
+
+-- remettre la DB a 0
+\c postgres;
+drop database culturo;
+create database culturo;
+\c culturo;
+\d

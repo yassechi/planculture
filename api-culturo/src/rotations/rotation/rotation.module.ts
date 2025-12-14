@@ -7,10 +7,11 @@ import { SectionPlan } from 'src/entities/section_plan.entity';
 import { Vegetable } from 'src/entities/vegetable.entity';
 import { RotationController } from './rotation.controller';
 import { RotationService } from './rotation.service';
+import { Variety } from 'src/entities/variety.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Section, Sole, Board, SectionPlan, Vegetable]),
+    TypeOrmModule.forFeature([Section, Sole, Board, SectionPlan, Vegetable, Variety]),
     // 💡 SUPPRIMÉ : VegetableModule (on n'en a pas besoin)
   ],
   controllers: [RotationController],

@@ -1,23 +1,14 @@
-import { OrderDetail } from './order-details.entity';
-import {
-  Column,
-  Entity,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
-import { Section } from './section.entity';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'typeorm';
 import { Family } from './family.entity';
-import { Price } from './price.entity';
 import { Variety } from './variety.entity';
+import { Section } from './section.entity';
+import { Price } from './price.entity';
+import { OrderDetail } from './order-details.entity';
 
 @Entity()
 export class Vegetable {
   @PrimaryGeneratedColumn()
   id_vegetable: number;
-
-  @Column()
-  variety_id: number;
 
   @Column()
   vegetable_name: string;
@@ -43,18 +34,19 @@ export class Vegetable {
   @Column()
   estimated_yield: number;
 
-  @ManyToOne(() => Family, (family) => family.id_family)
+  @ManyToOne(() => Family, (family) => family.vegetables)
   family: Family;
+
+  @OneToMany(() => Variety, (variety) => variety.vegetable, { cascade: true })
+  varieties: Variety[];
+
+  // Relation vers Section, nullable
+  @OneToMany(() => Section, (section) => section.vegetable, { nullable: true })
+  sections?: Section[];
 
   @OneToMany(() => Price, (price) => price.vegetable)
   prices: Price[];
 
-  @OneToMany(() => Section, (section) => section.vegetable)
-  sections: Section[];
-
   @OneToMany(() => OrderDetail, (orderDetail) => orderDetail.vegetable)
   orderDetails: OrderDetail[];
-
-  @OneToMany(() => Variety, (variety) => variety.vegetable)
-  varieties: Variety[];
 }

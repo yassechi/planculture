@@ -1,105 +1,103 @@
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseIntPipe,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+
+import { HarvestService } from './harvest.service';
 import { CreateHarvestDTO } from './dtos/create.harvest.dto';
 import { UpdateHarvestDTO } from './dtos/update.harvest.dto';
 import { Harvest } from 'src/entities/harvest.entity';
-import { HarvestService } from './harvest.service';
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiBody,
-} from '@nestjs/swagger';
 
-@ApiTags('harvests')
+@ApiTags('Harvests')
 @Controller('harvests')
 export class HarvestController {
   constructor(private readonly harvestService: HarvestService) {}
 
-  /**
-   *
-   * @returns
-   */
   @Get()
-  @ApiOperation({ summary: 'Récupère toutes les récoltes' })
+  @ApiOperation({ summary: 'Récupérer toutes les récoltes' })
   @ApiResponse({
-    status: 200,
-    description: 'Liste des récoltes',
-    type: [Harvest],
+    status: HttpStatus.OK,
+    description: 'Liste de toutes les récoltes',
+    type: [Harvest], // Assurez-vous que Harvest est exporté et bien typé
   })
   async findAll(): Promise<Harvest[]> {
-    return await this.harvestService.findAll();
+    return this.harvestService.findAll();
   }
 
-  /**
-   *
-   * @param id
-   * @returns
-   */
   @Get(':id')
-  @ApiOperation({ summary: 'Récupère une récolte par son ID' })
-  @ApiParam({ name: 'id', description: 'ID de la récolte', type: Number })
-  @ApiResponse({ status: 200, description: 'Récolte trouvée', type: Harvest })
-  @ApiResponse({ status: 404, description: 'Récolte non trouvée' })
-  async findOne(@Param('id') id: number): Promise<Harvest> {
-    return await this.harvestService.findOne(id);
-  }
-
-  /**
-   *
-   * @param dto
-   * @returns
-   */
-  @Post()
-  @ApiOperation({ summary: 'Crée une nouvelle récolte' })
-  @ApiBody({ type: CreateHarvestDTO })
-  @ApiResponse({ status: 201, description: 'Récolte créée', type: Harvest })
-  async create(@Body() dto: CreateHarvestDTO): Promise<Harvest> {
-    return await this.harvestService.create(dto);
-  }
-
-  /**
-   *
-   * @param id
-   * @param dto
-   * @returns
-   */
-  @Patch(':id')
-  @ApiOperation({ summary: 'Met à jour une récolte existante' })
-  @ApiParam({ name: 'id', description: 'ID de la récolte', type: Number })
-  @ApiBody({ type: UpdateHarvestDTO })
+  @ApiOperation({ summary: 'Récupérer une récolte par ID' })
   @ApiResponse({
-    status: 200,
-    description: 'Récolte mise à jour',
+    status: HttpStatus.OK,
+    description: 'Détails de la récolte',
     type: Harvest,
   })
-  @ApiResponse({ status: 404, description: 'Récolte non trouvée' })
-  async update(
-    @Param('id') id: number,
-    @Body() dto: UpdateHarvestDTO,
-  ): Promise<Harvest> {
-    return await this.harvestService.update(id, dto);
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Récolte non trouvée',
+  })
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<Harvest> {
+    return this.harvestService.findOne(id);
   }
 
-  /**
-   *
-   * @param id
-   * @returns
-   */
+  @Post()
+  @ApiOperation({
+    summary: 'Créer une nouvelle récolte et marquer la section comme inactive',
+  })
+  @ApiBody({ type: CreateHarvestDTO })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description:
+      "La récolte a été créée. La section associée est marquée 'section_active = false' et sa date de fin est mise à jour.",
+    type: Harvest,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Utilisateur ou Section non trouvé(e).',
+  })
+  async create(@Body() createHarvestDto: CreateHarvestDTO): Promise<Harvest> {
+    return this.harvestService.create(createHarvestDto);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Mettre à jour une récolte existante' })
+  @ApiBody({ type: UpdateHarvestDTO })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'La récolte a été mise à jour.',
+    type: Harvest,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Récolte, Utilisateur ou Section non trouvé(e).',
+  })
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateHarvestDto: UpdateHarvestDTO,
+  ): Promise<Harvest> {
+    return this.harvestService.update(id, updateHarvestDto);
+  }
+
   @Delete(':id')
-  @ApiOperation({ summary: 'Supprime une récolte' })
-  @ApiParam({ name: 'id', description: 'ID de la récolte', type: Number })
-  @ApiResponse({ status: 200, description: 'Récolte supprimée' })
-  @ApiResponse({ status: 404, description: 'Récolte non trouvée' })
-  async remove(@Param('id') id: number): Promise<void> {
-    return await this.harvestService.remove(id);
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Supprimer une récolte' })
+  @ApiResponse({
+    status: HttpStatus.NO_CONTENT,
+    description: 'La récolte a été supprimée avec succès.',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Récolte non trouvée.',
+  })
+  async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    await this.harvestService.remove(id);
   }
 }

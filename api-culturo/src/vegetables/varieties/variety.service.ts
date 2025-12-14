@@ -35,24 +35,24 @@ export class VarietyService {
   }
 
   // Création d'une variété
-  async createvariety(payload: CreateVarietyDTO) {
-    // Vérifier si le legume existe
-    const vegetable = await this.vegetableRepository.findOne({
-      where: { id_vegetable: payload.id_vegetable },
-    });
+  // async createvariety(payload: CreateVarietyDTO) {
+  //   // Vérifier si le legume existe
+  //   const vegetable = await this.vegetableRepository.findOne({
+  //     where: { id_vegetable: payload.id_vegetable },
+  //   });
 
-    if (!vegetable) {
-      throw new NotFoundException('Vegetable not found'); // Stop Function
-    }
+  //   if (!vegetable) {
+  //     throw new NotFoundException('Vegetable not found'); // Stop Function
+  //   }
 
-    // Créer la variété avec son nom
-    const variety = this.varietyRepository.create({
-      ...payload,
-      vegetable,
-    });
+  //   // Créer la variété avec son nom
+  //   const variety = this.varietyRepository.create({
+  //     ...payload,
+  //     vegetable,
+  //   });
 
-    return this.varietyRepository.save(variety);
-  }
+  //   return this.varietyRepository.save(variety);
+  // }
 
   //   // si tu veux récupérer la relation existante
   async updateVariety(payload: UpdateVarietyDTO) {

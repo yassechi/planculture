@@ -37,15 +37,15 @@ export class VarietyController {
     return this.varietyService.geteAllVarietiesByVegetableId(vegtableId);
   }
 
-  /**
-   * POST /variety
-   * Création d’une variété
-   */
-  @Post()
-  @ApiOperation({ summary: 'Create a variety' })
-  public async createFamily(@Body() payload: CreateVarietyDTO) {
-    return this.varietyService.createvariety(payload);
-  }
+  // /**
+  //  * POST /variety
+  //  * Création d’une variété
+  //  */
+  // @Post()
+  // @ApiOperation({ summary: 'Create a variety' })
+  // public async createFamily(@Body() payload: CreateVarietyDTO) {
+  //   return this.varietyService.createvariety(payload);
+  // }
 
   //   /**
   //    * PUT /variety

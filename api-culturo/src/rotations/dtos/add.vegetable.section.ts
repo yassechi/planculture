@@ -1,82 +1,70 @@
-import {
-  IsNumber,
-  IsDateString,
+// src/dto/add-vegetable-to-board.dto.ts
+
+import { 
+  IsNumber, 
+  IsDateString, 
+  IsOptional, 
+  IsString, 
+  IsNotEmpty, 
+  IsPositive, 
   IsBoolean,
-  IsOptional,
-  Min,
+  IsNumberString 
 } from 'class-validator';
-import { Type } from 'class-transformer';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class AddVegetableToBoardDto {
-  @ApiProperty({
-    description: 'ID de la planche où planter le légume',
-    example: 1,
-  })
+  @ApiProperty({ description: 'ID de la planche de culture cible.', example: 1 })
+  @IsNotEmpty()
+  @IsPositive()
   @IsNumber()
-  @Type(() => Number)
   boardId: number;
 
-  @ApiProperty({
-    description: 'Numéro de la section sur la planche',
-    example: 2,
-    minimum: 1,
-  })
+  @ApiProperty({ description: 'Numéro de la section dans la planche (ex: 1 à 4).', example: 2 })
+  @IsNotEmpty()
+  @IsPositive()
   @IsNumber()
-  @Min(1)
-  @Type(() => Number)
   sectionNumber: number;
 
-  @ApiProperty({
-    description: 'ID du légume à planter',
-    example: 5,
-  })
+  @ApiProperty({ description: 'ID du légume à planter (ex: 1 pour Tomate).', example: 5 })
+  @IsNotEmpty()
+  @IsPositive()
   @IsNumber()
-  @Type(() => Number)
   vegetableId: number;
 
-  @ApiProperty({
-    description: 'Date de début de plantation',
-    example: '2025-03-01',
-    type: String,
-  })
+  @ApiProperty({ description: 'Date de début de la plantation (format YYYY-MM-DD).', example: '2025-05-15' })
+  @IsNotEmpty()
   @IsDateString()
-  startDate: string;
+  startDate: Date;
 
-  @ApiProperty({
-    description: 'Date de fin de plantation',
-    example: '2025-06-30',
-    type: String,
-  })
+  @ApiProperty({ description: 'Date de fin de cycle (estimation basée sur la durée de récolte du légume).', example: '2025-09-30' })
+  @IsNotEmpty()
   @IsDateString()
-  endDate: string;
+  endDate: Date;
 
-  @ApiPropertyOptional({
-    description: 'Quantité plantée',
-    example: 100,
-    minimum: 0,
-    default: 0,
-  })
+  @ApiProperty({ description: 'Quantité plantée (optionnelle).', example: 10, required: false })
   @IsOptional()
   @IsNumber()
-  @Min(0)
-  @Type(() => Number)
-  quantityPlanted?: number;
+  quantityPlanted: number = 0;
 
-  @ApiProperty({
-    description: 'unité',
-    example: 'kg',
-    type: String,
-  })
+  @ApiProperty({ description: "Unité de mesure de la quantité (ex: 'unité', 'm2', 'pieds').", example: 'pieds' })
+  @IsNotEmpty()
+  @IsString()
   unity: string;
 
-  @ApiPropertyOptional({
-    description: 'Forcer la plantation en ignorant les règles de rotation',
-    example: false,
-    default: false,
+  @ApiProperty({ 
+    description: "Identifiant de la variété. Peut être l'ID (nombre) ou le nom (chaîne de caractères).", 
+    example: 'Roma' 
+  })
+  @IsNotEmpty()
+  // Note: On utilise IsString ou IsNumber, la validation sera gérée par le service.
+  varietyIdentifier: string | number;
+
+  @ApiProperty({ 
+    description: 'Permet de passer outre les avertissements de rotation des cultures (défaut: false).', 
+    example: true, 
+    required: false 
   })
   @IsOptional()
   @IsBoolean()
-  @Type(() => Boolean)
-  bypass?: boolean;
+  bypass?: boolean = false; 
 }
