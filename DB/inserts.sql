@@ -44,9 +44,10 @@ INSERT INTO "user_" (
     user_first_name, user_last_name, birth_date,
     email, hpassword, phone, user_active, "id_role"
 ) VALUES
-('Sylvie','Dubois','1980-01-01','sylvie@culturo.be','$2b$10$KbQi8A2l2ZH3Bp6mDcU8uOYkH7N9n8kXQXlx0cRx2h/DQyJ1n/RHu','0471111111',TRUE,1),
-('Marc','Lefevre','1985-05-15','marc@culturo.be','$2b$10$KbQi8A2l2ZH3Bp6mDcU8uOYkH7N9n8kXQXlx0cRx2h/DQyJ1n/RHu','0472222222',TRUE,2),
-('Antoine','Ferma','1995-01-01','antoine@culturo.be','$2b$10$KbQi8A2l2ZH3Bp6mDcU8uOYkH7N9n8kXQXlx0cRx2h/DQyJ1n/RHu','0473333333',TRUE,2);
+('Sylvie','Dubois','1980-01-01','sylvie@culturo.be','$2b$10$Xm4X5/K5RIi5PpMLN6jnwenQDDz77mFAar4nhbgIaqxvQERtVtEgu','0471111111',TRUE,1),
+('yass','echi','1980-01-01','yassechi@gmail.com','$2b$10$Xm4X5/K5RIi5PpMLN6jnwenQDDz77mFAar4nhbgIaqxvQERtVtEgu','0471111111',TRUE,1),
+('Marc','Lefevre','1985-05-15','marc@culturo.be','$$2b$10$Xm4X5/K5RIi5PpMLN6jnwenQDDz77mFAar4nhbgIaqxvQERtVtEgu','0472222222',TRUE,2),
+('Antoine','Ferma','1995-01-01','antoine@culturo.be','$2b$10$Xm4X5/K5RIi5PpMLN6jnwenQDDz77mFAar4nhbgIaqxvQERtVtEgu','0473333333',TRUE,2);
 
 -- =====================================================
 -- 7. EXPLOITATION

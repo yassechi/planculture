@@ -1,11 +1,28 @@
+// src/main.ts (Version Corrigée)
+
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import * as fs from 'fs'; // NOUVEAU
+import * as path from 'path'; // NOUVEAU
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { cors: true });
+  // 1. DÉFINITION HTTPS ET LECTURE DES CLÉS
+  // Construit le chemin absolu vers le dossier secrets (depuis /dist vers /secrets)
+  const secretPath = path.join(__dirname, '..', 'secrets');
+  
+  const httpsOptions = {
+    // Lecture des clés que vous avez générées
+    key: fs.readFileSync(path.join(secretPath, 'private-key.pem')), 
+    cert: fs.readFileSync(path.join(secretPath, 'public-certificate.pem')),
+  };
 
-  // CORS
+  // 2. CRÉATION DE L'APPLICATION AVEC HTTPS
+  const app = await NestFactory.create(AppModule, {
+    httpsOptions, // PASSAGE DE LA CONFIGURATION HTTPS ICI
+  });
+
+  // CORS (Vous aviez déjà la bonne configuration ici, mais on utilise app.enableCors une fois)
   app.enableCors({
     origin: true,
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
@@ -13,16 +30,17 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Swagger Config
+  // Swagger Config (Votre configuration existante)
   const config = new DocumentBuilder()
     .setTitle('Culturo API')
     .setDescription("L'API de la gestion de l'application Culturo")
-    .addServer('http://localhost:3000')
-    .setTermsOfService('http://localhost:3000/terms-of-service')
+    // IMPORTANT : Changez l'URL du serveur dans Swagger à HTTPS
+    .addServer('https://localhost:3000') 
+    .setTermsOfService('https://localhost:3000/terms-of-service')
     .setLicense('MIT License', 'https://google.com')
     .setVersion('1.0')
-    .addSecurity('bearer', { type: 'http', scheme: 'bearer' }) //Pour l'auth Token
-    .addBearerAuth() //Pour l'auth Token
+    .addSecurity('bearer', { type: 'http', scheme: 'bearer' }) 
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
@@ -30,8 +48,9 @@ async function bootstrap() {
   // Route Swagger
   SwaggerModule.setup('swagger', app, document);
 
-  // Lancement du serveur
+  // Lancement du serveur (Le port par défaut sera toujours 3000)
   await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
+  console.log(`Server running on https://${await app.getUrl()}`); // Affichage du bon protocole
 }
 
 bootstrap();
