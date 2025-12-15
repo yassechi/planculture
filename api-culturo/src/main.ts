@@ -23,12 +23,22 @@ async function bootstrap() {
   });
 
   // CORS (Vous aviez déjà la bonne configuration ici, mais on utilise app.enableCors une fois)
+  // app.enableCors({
+  //   origin: true,
+  //   methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+  //   allowedHeaders: ['Content-Type', 'Authorization'],
+  //   credentials: true,
+  // });
+
   app.enableCors({
-    origin: true,
-    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
-  });
+  origin: [
+    'https://localhost:5173', // front https
+    'http://localhost:5173',  // front http si tu testes
+  ],
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+  allowedHeaders: 'Content-Type, Authorization',
+  credentials: true, // nécessaire si tu envoies JWT ou cookies
+});
 
   // Swagger Config (Votre configuration existante)
   const config = new DocumentBuilder()
