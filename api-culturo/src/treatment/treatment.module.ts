@@ -4,19 +4,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TreatedController } from './treatment.controller';
 import { TreatedService } from './treatment.service';
 import { Treated } from '../entities/treated.entity';
-import { Board } from '../entities/board.entity'; // Ajoutez
-import { Treatment } from '../entities/treatment.entity'; // Ajoutez
+import { Board } from '../entities/board.entity';
+import { Treatment } from '../entities/treatment.entity';
 import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      Treated,
-      Board, // Ajoutez
-      Treatment, // Ajoutez
-    ]),
-    UsersModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Treated, Board, Treatment]), UsersModule],
   controllers: [TreatedController],
   providers: [TreatedService],
   exports: [TreatedService],

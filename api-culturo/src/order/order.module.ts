@@ -11,7 +11,7 @@ import { UsersModule } from '../users/users.module';
   imports: [
     TypeOrmModule.forFeature([
       Order,
-      User_, // Ajoutez cette ligne
+      User_, 
     ]),
     UsersModule,
   ],

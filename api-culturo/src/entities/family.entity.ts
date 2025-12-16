@@ -7,7 +7,6 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Vegetable } from './vegetable.entity';
-// import { Legume } from './vegetable.entity';
 
 @Entity()
 export class Family {

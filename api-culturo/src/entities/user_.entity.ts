@@ -39,10 +39,11 @@ export class User_ {
   @Column({ type: 'varchar', nullable: true })
   path_photo: string;
 
-  @Column({ type: 'boolean', default: true })
+  @Column({ default: 1 })
   user_active: boolean;
 
-  @CreateDateColumn({ type: 'timestamp', default: () => CURRENT_TIMESTAMP })
+  //@CreateDateColumn({ type: 'timestamp', default: () => CURRENT_TIMESTAMP })
+  @Column({ default: new Date() })
   created_at: Date;
 
   @CreateDateColumn({

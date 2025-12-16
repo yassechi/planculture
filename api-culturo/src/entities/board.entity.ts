@@ -33,7 +33,7 @@ export class Board {
 
   @ManyToOne(() => Sole, (sole) => sole.boards)
   @JoinColumn({ name: 'id_sole' })
-  sole: Sole; // ⬅️ Nom de la propriété !
+  sole: Sole; 
 
   @OneToMany(() => SectionPlan, (sectionPlan) => sectionPlan.board)
   sectionPlans: SectionPlan[];

@@ -24,10 +24,7 @@ import {
   ApiResponse,
   ApiSecurity,
 } from '@nestjs/swagger';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { RotationService } from './rotation.service';
-import { Vegetable } from 'src/entities/vegetable.entity';
 import { PlantingValidationDto } from '../dtos/planting.validation.dto';
 import { CulturePlanQueryDto } from '../dtos/culture.plan.query.dto';
 import { PlantableVegetableDto } from '../dtos/plantable.vegetable.dro';

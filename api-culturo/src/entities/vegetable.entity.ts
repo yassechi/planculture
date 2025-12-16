@@ -40,7 +40,6 @@ export class Vegetable {
   @OneToMany(() => Variety, (variety) => variety.vegetable, { cascade: true })
   varieties: Variety[];
 
-  // Relation vers Section, nullable
   @OneToMany(() => Section, (section) => section.vegetable, { nullable: true })
   sections?: Section[];
 

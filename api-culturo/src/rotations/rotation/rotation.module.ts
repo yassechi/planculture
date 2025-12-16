@@ -12,13 +12,7 @@ import { UsersModule } from 'src/users/users.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      Section,
-      Vegetable,
-      SectionPlan,
-      Board,
-      Variety, // Ajoutez cette ligne
-    ]),
+    TypeOrmModule.forFeature([Section, Vegetable, SectionPlan, Board, Variety]),
     UsersModule,
   ],
   controllers: [RotationController],

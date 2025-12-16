@@ -4,14 +4,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { WateringController } from './watering.controller';
 import { WateringService } from './watering.service';
 import { Watering } from '../entities/watering.entity';
-import { Section } from '../entities/section.entity'; // Ajoutez
+import { Section } from '../entities/section.entity'; 
 import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       Watering,
-      Section, // Ajoutez
+      Section, 
     ]),
     UsersModule,
   ],

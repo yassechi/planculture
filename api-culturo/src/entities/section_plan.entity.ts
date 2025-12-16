@@ -27,6 +27,6 @@ export class SectionPlan {
   sections: Section[];
 
   @ManyToOne(() => Board, (board) => board.sectionPlans)
-  @JoinColumn({ name: 'id_board' }) // Assurez-vous d'avoir une colonne 'id_board' dans votre table section_plan
-  board: Board; // OK
+  @JoinColumn({ name: 'id_board' }) 
+  board: Board; 
 }

@@ -31,18 +31,11 @@ export class BoardPlanDto {
     example: 'Tomate',
   })
   @IsString()
-  vegetableName: string;
-
-  // @ApiProperty({
-  //   description: "Variété du légume (ex: 'Marmande').",
-  //   example: 'Marmande',
-  // })
-  // @IsString()
-  // varietyName: string | null;
+  vegetableName: string;;
 
   @ApiProperty({
     description: 'Date de début de la culture/plantation.',
-    type: String, // Définir comme String pour le format Date ISO en JSON
+    type: String, 
     format: 'date-time',
     example: '2025-03-15T00:00:00.000Z',
   })
@@ -51,7 +44,7 @@ export class BoardPlanDto {
 
   @ApiProperty({
     description: 'Date de fin estimée de la culture/récolte.',
-    type: String, // Définir comme String pour le format Date ISO en JSON
+    type: String,
     format: 'date-time',
     example: '2025-07-30T00:00:00.000Z',
   })
@@ -62,14 +55,13 @@ export class BoardPlanDto {
     boardName: string,
     boardId: number,
     vegetableName: string,
-    varietyName: string,
+    // varietyName: string,
     startDate: Date,
     endDate: Date,
   ) {
     this.boardName = boardName;
     this.boardId = boardId;
     this.vegetableName = vegetableName;
-    // this.varietyName = varietyName;
     this.startDate = startDate;
     this.endDate = endDate;
   }

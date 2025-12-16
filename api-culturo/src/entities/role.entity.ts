@@ -1,6 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { User_ } from './user_.entity';
-// import { Utilisateur } from './user_.entity';
 
 @Entity()
 export class Role {

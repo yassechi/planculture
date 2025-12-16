@@ -1,10 +1,7 @@
-// src/users/configs/role-permissions.config.ts
-
 import { Permission } from "./permission.enum";
 
-
 export const PERMISSIONS_PAR_ROLE: Record<string, Permission[]> = {
-  formateur: [ // En minuscules
+  formateur: [
     // Gestion des utilisateurs
     Permission.ACCEDER_LISTE_UTILISATEURS,
     Permission.CREER_UTILISATEUR,
@@ -26,8 +23,9 @@ export const PERMISSIONS_PAR_ROLE: Record<string, Permission[]> = {
     Permission.MODIFIER_SUPPRIMER_RECOLTE,
   ],
   
-  stagiaire: [ // En minuscules
+  stagiaire: [ 
+    // En minuscules
     // Permissions limitées pour les stagiaires
-    // À définir selon vos besoins
+    // À définir selon les besoins
   ],
 };

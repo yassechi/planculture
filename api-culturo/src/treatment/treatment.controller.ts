@@ -24,8 +24,6 @@ import {
   ApiSecurity,
 } from '@nestjs/swagger';
 import { AuthChard } from '../users/guards/auth.guard';
-import { PermissionsGuard } from '../users/guards/permissions.guard';
-import { RequiertPermissions } from '../users/decorators/permissions.decorator';
 
 @ApiTags('Treated')
 @Controller('treated')
@@ -44,7 +42,10 @@ export class TreatedController {
     description: 'Liste des traitements',
     type: [Treated],
   })
-  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Non authentifié' })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Non authentifié',
+  })
   async findAll(): Promise<Treated[]> {
     return await this.treatedService.findAll();
   }
@@ -57,9 +58,19 @@ export class TreatedController {
   @ApiSecurity('bearer')
   @ApiOperation({ summary: 'Récupère un traitement par son ID' })
   @ApiParam({ name: 'id', description: 'ID du traitement', type: Number })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Traitement trouvé', type: Treated })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Traitement non trouvé' })
-  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Non authentifié' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Traitement trouvé',
+    type: Treated,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Traitement non trouvé',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Non authentifié',
+  })
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<Treated> {
     return await this.treatedService.findOne(id);
   }
@@ -72,8 +83,15 @@ export class TreatedController {
   @ApiSecurity('bearer')
   @ApiOperation({ summary: 'Crée un nouveau traitement appliqué' })
   @ApiBody({ type: CreateTreatedDTO })
-  @ApiResponse({ status: HttpStatus.CREATED, description: 'Traitement créé', type: Treated })
-  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Non authentifié' })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Traitement créé',
+    type: Treated,
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Non authentifié',
+  })
   async create(@Body() dto: CreateTreatedDTO): Promise<Treated> {
     return await this.treatedService.create(dto);
   }
@@ -92,8 +110,14 @@ export class TreatedController {
     description: 'Traitement mis à jour',
     type: Treated,
   })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Traitement non trouvé' })
-  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Non authentifié' })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Traitement non trouvé',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Non authentifié',
+  })
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateTreatedDTO,
@@ -110,9 +134,18 @@ export class TreatedController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Supprime un traitement appliqué' })
   @ApiParam({ name: 'id', description: 'ID du traitement', type: Number })
-  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Traitement supprimé' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Traitement non trouvé' })
-  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Non authentifié' })
+  @ApiResponse({
+    status: HttpStatus.NO_CONTENT,
+    description: 'Traitement supprimé',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Traitement non trouvé',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Non authentifié',
+  })
   async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return await this.treatedService.remove(id);
   }

@@ -24,13 +24,18 @@ import { Variety } from './entities/variety.entity';
 
 export const AppDataSourceOptions: DataSourceOptions = {
   type: 'postgres',
-  host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT ?? '5432'),
+  // host: process.env.DB_HOST,
+  // host: "culturo-server.database.windows.net",
+  host: "localhost",
+  port: parseInt( '5432'),
   // username: process.env.DB_USER,
+  // username: 'culturo',
   username: 'postgres',
   // password: process.env.DB_PASSWORD,
+  // password: 'Playzone1234=',
   password: 'root',
   // database: process.env.DB_NAME,
+  // database: 'culturoDB',
   database: 'culturo',
   entities: [
     User_,

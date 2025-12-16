@@ -30,6 +30,6 @@ import { PermissionsGuard } from './guards/permissions.guard';
   ],
   providers: [UsersService, AuthChard, PermissionsGuard],
   controllers: [UsersController],
-  exports: [UsersService, AuthChard, PermissionsGuard, JwtModule], // Ajoutez JwtModule
+  exports: [UsersService, AuthChard, PermissionsGuard, JwtModule],
 })
 export class UsersModule {}

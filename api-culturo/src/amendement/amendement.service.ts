@@ -42,39 +42,35 @@ export class AmendedService {
   /**
    * Création d’un nouvel amendement
    */
-  /**
- * Création d'un nouvel amendement
- */
-public async createAmended(payload: CreateAmendementDTO): Promise<Amended> {
-  const { amendment_date, title, description, id_board } = payload;
+  public async createAmended(payload: CreateAmendementDTO): Promise<Amended> {
+    const { amendment_date, title, description, id_board } = payload;
 
-  let board: Board | null = null;
+    let board: Board | null = null;
 
-  // Si un id_board est fourni, on vérifie qu'il existe
-  if (id_board) {
-    const boardIdNumber = Number(id_board);
+    if (id_board) {
+      const boardIdNumber = Number(id_board);
 
-    board = await this.boardRepository.findOne({
-      where: { id_board: boardIdNumber },
+      board = await this.boardRepository.findOne({
+        where: { id_board: boardIdNumber },
+      });
+
+      if (!board) {
+        throw new NotFoundException(
+          `Board avec l'id ${boardIdNumber} introuvable`,
+        );
+      }
+    }
+
+    const amended = this.amendedRepository.create({
+      amendment_date,
+      title,
+      description,
+      board,
+      amendement: null,
     });
 
-    if (!board) {
-      throw new NotFoundException(
-        `Board avec l'id ${boardIdNumber} introuvable`
-      );
-    }
+    return this.amendedRepository.save(amended);
   }
-
-  const amended = this.amendedRepository.create({
-    amendment_date,
-    title,
-    description,
-    board,
-    amendement: null, // Aussi null par défaut
-  });
-
-  return this.amendedRepository.save(amended);
-}
 
   /**
    * update d’un  amendement

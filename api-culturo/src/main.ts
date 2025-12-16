@@ -3,8 +3,8 @@
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import * as fs from 'fs'; // NOUVEAU
-import * as path from 'path'; // NOUVEAU
+import * as fs from 'fs';
+import * as path from 'path'; 
 
 async function bootstrap() {
   // 1. DÉFINITION HTTPS ET LECTURE DES CLÉS

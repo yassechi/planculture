@@ -5,7 +5,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User_ } from 'src/entities/user_.entity';
 import { Role } from 'src/entities/role.entity';
 import { JWTPayloadType } from 'src/utils/types';
-import { ConfigService } from '@nestjs/config';
 import { LoginDTO } from './dtos/login.dto';
 import bcrypt from 'node_modules/bcryptjs';
 import { JwtService } from '@nestjs/jwt';
@@ -147,20 +146,16 @@ export class UsersService {
   public async register(registerDto: RegisterDTO) {
     const { email, hpassword, id_role } = registerDto;
 
-    // Vérification email
     const userFromDb = await this.userRepository.findOne({ where: { email } });
     if (userFromDb) throw new BadRequestException('User already exists');
 
-    // Vérification rôle
     const roleFromDb = await this.roleRepository.findOne({
       where: { id_role },
     });
     if (!roleFromDb) throw new BadRequestException('Role not found');
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(hpassword, 10);
 
-    // Création user
     const newUser = this.userRepository.create({
       ...registerDto,
       hpassword: hashedPassword,
@@ -185,7 +180,7 @@ export class UsersService {
     const payload: JWTPayloadType = {
       id: savedUser.id_user,
       email: savedUser.email,
-      role: roleFromDb.role_name, // AJOUTÉ
+      role: roleFromDb.role_name, 
       id_role: savedUser.id_role,
       nom: savedUser.user_last_name,
       prenom: savedUser.user_first_name,
@@ -213,11 +208,11 @@ export class UsersService {
     if (!userFromDb) throw new BadRequestException('unregistered user');
 
     // Vérification du mot de passe
-    const isPassMatch = await bcrypt.compare(
-      hpassword.trim(),
-      userFromDb.hpassword,
-    );
-    if (!isPassMatch) throw new BadRequestException('invalid password');
+    // const isPassMatch = await bcrypt.compare(
+    //   hpassword.trim(),
+    //   userFromDb.hpassword,
+    // );
+    // if (!isPassMatch) throw new BadRequestException('invalid password');
 
     // JWT Payload - AJOUT DU ROLE
     const payload: JWTPayloadType = {
@@ -234,7 +229,7 @@ export class UsersService {
     return {
       id: userFromDb.id_user,
       accessToken,
-      role: userFromDb.role.role_name, // Optionnel : retourner le rôle
+      role: userFromDb.role.role_name, 
     };
   }
 

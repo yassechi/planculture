@@ -8,7 +8,6 @@ import {
   IsNotEmpty, 
   IsPositive, 
   IsBoolean,
-  IsNumberString 
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -56,7 +55,7 @@ export class AddVegetableToBoardDto {
     example: 'Roma' 
   })
   @IsNotEmpty()
-  // Note: On utilise IsString ou IsNumber, la validation sera gérée par le service.
+  ////
   varietyIdentifier: string | number;
 
   @ApiProperty({ 
